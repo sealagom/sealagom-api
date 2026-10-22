@@ -18,6 +18,7 @@ an OpenAI-style tool caller, an OpenAPI importer, or an HTTP node. Pick the row 
 | LangChain, LlamaIndex, CrewAI, AutoGen, Semantic Kernel, Spring AI | wrap `python/sealagom.py` methods as tools, or load the OpenAPI spec | [../python/sealagom.py](../python/sealagom.py) |
 | n8n, Zapier, Make, Power Automate, Pipedream, Home Assistant, Node-RED | HTTP request node: GET `https://www.sealagom.com/api/v2/messages/?...` with header `X-API-Token` | below |
 | Excel, Power BI, Google Sheets | Power Query "From Web" / `IMPORTDATA` on the JSON, or the RSS and plain-text feeds | below |
+| X (Twitter), Facebook Page, Instagram, Threads, Telegram, Discord, Slack, Mastodon, Bluesky | one poll loop that posts every new warning, one publisher per platform, keys by environment variable | [social.py](social.py) |
 | Windows batch, PowerShell, bash, cron, CI | the example scripts; the route drop link for tools that only POST a file | [../examples/](../examples/) |
 | ECDIS and bridge software | the route check with the ECDIS route file (RTZ, RT3) and the exports on the site | [../examples/route-check.sh](../examples/route-check.sh) |
 
@@ -41,7 +42,15 @@ Google Sheets: `=IMPORTDATA("https://www.sealagom.com/feeds/warnings.txt?navarea
 needed) or an Apps Script fetch with the header for the JSON. Excel and Power BI: Data, From Web,
 Advanced, add the `X-API-Token` header, then expand `results`.
 
-## Telegram, Slack, Teams, e-mail
+## X, Meta, Telegram, Discord and the others
+
+`python social.py --navarea 1 --severity critical --to x,telegram` posts every new warning (region, number,
+headline, severity, link) to the chosen accounts and remembers what it posted; run it from cron every
+15 minutes or let it loop. Instagram needs a picture, so the script draws a plain card. Grok reads X,
+so a posting account is what Grok sees; Grok as a model is `openai_compatible.py` with base URL
+https://api.x.ai/v1.
+
+## Teams, e-mail
 
 Use the site's own alerts (Profile, Alerts) or a 20-line bot on top of `python/sealagom.py`:
 poll `messages(navarea_id=..., ai_in_force=True)`, remember the `(scope, region_id, number)` keys

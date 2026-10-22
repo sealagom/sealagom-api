@@ -122,6 +122,9 @@ Endpoints: `/api/v2/ports/`, `/api/v2/ports/<slug>/`, `/api/v2/port-distances/`,
 `/api/v2/near/`, `/api/v2/rigs/`, `/api/v2/zones/`, `/api/v2/navarea-zones/`, `/api/v2/lights/`,
 `/api/v2/stats/` (tag `lookups` in [openapi.yaml](openapi.yaml)). The MCP server has them as
 `find_port`, `port_details`, `stations_near`, `find_vessel`, `rigs`; the OpenAI-style definitions too.
+Every port, station and warning row carries `url`, the page on the site; stations carry `mmsi` (and
+`mmsi_all` for the DSC stations with several), so a script can go from an MMSI to the station, the
+rescue centre, the port and the warnings around it.
 
 ## Route converter
 
@@ -143,13 +146,13 @@ https://www.sealagom.com/github/tools/).
 
 Copilot, ChatGPT, Gemini, Grok, DeepSeek, Qwen, Kimi, Zhipu, Baidu, NVIDIA NIM, Groq, Ollama, Dify, Coze,
 n8n, Zapier, Make, Power Automate, Home Assistant, LangChain, Excel, Google Sheets and Docs (Apps Script),
-Google Earth and My Maps, Telegram bots:
+Google Earth and My Maps, X, Facebook, Instagram, Threads, Telegram, Discord, Slack, Mastodon, Bluesky:
 [integrations/PLATFORMS.md](integrations/PLATFORMS.md) has the row for each, with
 [integrations/openai-tools.json](integrations/openai-tools.json) (function definitions for any
 OpenAI-style tool caller) and [integrations/openai_compatible.py](integrations/openai_compatible.py)
 (the same loop on any of them: change the base URL), [integrations/gemini.py](integrations/gemini.py)
 (the same tools as Gemini function declarations), [integrations/google-apps-script.gs](integrations/google-apps-script.gs)
-(Sheets formulas and a Docs menu) and [integrations/google-maps.md](integrations/google-maps.md) (KML for Earth and My Maps).
+(Sheets formulas and a Docs menu) and [integrations/google-maps.md](integrations/google-maps.md) (KML for Earth and My Maps), [integrations/social.py](integrations/social.py) (post every new warning to X, Meta and the rest).
 
 When a plan does not cover a call, the answer carries `upgrade`: the plan that unlocks it, the price
 for that request, the card link and the crypto call an agent can make on its own.
