@@ -77,6 +77,24 @@ SEALAGOM_API_KEY=YOUR_KEY python mcp/sealagom_mcp.py
 No MCP? Give the agent the README the API itself serves, it is written for them:
 https://www.sealagom.com/api/public/api-setup-readme/
 
+## Any system: drop a route, get the result
+
+The same call from whatever you have: [examples/route-check.bat](examples/route-check.bat)
+(Windows batch), [examples/route-check.ps1](examples/route-check.ps1) (PowerShell),
+[examples/route-check.sh](examples/route-check.sh) (any shell), the Python and JavaScript clients
+above, or the drop link with the key in the address for tools that can only POST a file:
+
+```
+POST https://www.sealagom.com/api/v2/drop/YOUR_KEY/route/    form field "file"
+```
+
+## Pay from the console
+
+No browser needed: [examples/pay-from-console.sh](examples/pay-from-console.sh) opens a crypto
+invoice for an API plan and the status link returns the key once the coins arrived
+(`POST /api/agent/checkout/`, then `GET` the `status_url`). Donations of any size:
+`POST /api/agent/donate/ {"amount": 0.20}`.
+
 ## GitHub Action: check a route in CI
 
 Put a route file in a repository and let the Action fail the build when a warning of the chosen
