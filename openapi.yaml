@@ -22,6 +22,8 @@ tags:
   - name: regions
   - name: feeds
   - name: route
+  - name: noon
+    description: Noon reports, vessels, voyages and weather. The same key; plan limits per account.
   - name: public
     description: No key needed.
 paths:
@@ -168,6 +170,127 @@ paths:
                 corridor_nm: { type: number }
       responses:
         "200": { description: The route result, content: { application/json: { schema: { $ref: "#/components/schemas/RouteResult" } } } }
+  /api/map/account/:
+    get:
+      tags: [noon]
+      summary: The key's account: vessels, voyages, fleets, invitations, plan usage
+      responses:
+        "200": { description: The account }
+  /api/map/vessels/:
+    get:
+      tags: [noon]
+      summary: Your vessels (and the ones shared with you)
+      responses:
+        "200": { description: "{vessels: [...]}" }
+    post:
+      tags: [noon]
+      summary: Add a vessel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+                imo: { type: string }
+                mmsi: { type: string }
+                call_sign: { type: string }
+                flag: { type: string }
+                vessel_type: { type: string }
+                fleet: { type: integer, description: fleet id, optional }
+      responses:
+        "201": { description: The vessel, with public_id }
+  /api/map/vessels/{public_id}/voyages/:
+    get:
+      tags: [noon]
+      summary: The voyages of a vessel
+      parameters: [{ name: public_id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        "200": { description: "{voyages: [...]}" }
+    post:
+      tags: [noon]
+      summary: Open a voyage
+      parameters: [{ name: public_id, in: path, required: true, schema: { type: string, format: uuid } }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                number: { type: string }
+                name: { type: string }
+                departure_name: { type: string, description: port name or slug }
+                arrival_name: { type: string }
+                charterer: { type: string }
+                etd: { type: string, format: date-time }
+                eta: { type: string, format: date-time }
+                waypoints: { type: array, items: { type: object, properties: { lat: { type: number }, lon: { type: number } } }, description: the planned route, optional }
+      responses:
+        "201": { description: The voyage, with public_id }
+  /api/map/voyages/{public_id}/:
+    get:
+      tags: [noon]
+      summary: One voyage with its dashboard figures
+      parameters: [{ name: public_id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        "200": { description: The voyage }
+  /api/map/voyages/{public_id}/reports/:
+    get:
+      tags: [noon]
+      summary: The reports of a voyage (noon, departure, arrival, position, bunkering...)
+      parameters: [{ name: public_id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        "200": { description: "{reports: [...]}" }
+    post:
+      tags: [noon]
+      summary: Post a report (a bridge PC, a GPS logger, a script)
+      description: |
+        The figures go in `values` under the vessel's report item keys (the report form at
+        /report-form/ lists them: speed, distance, rpm, fuel and so on). A report of the same kind and
+        time replaces the earlier one. When the figures do not add up the answer is 409 with `checks`;
+        send `confirm: true` to save anyway.
+      parameters: [{ name: public_id, in: path, required: true, schema: { type: string, format: uuid } }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                kind: { type: string, default: noon, enum: [noon, departure, arrival, position, bunkering, cargo, eosp, sosp, anchoring, drifting, berthing, unberthing, shifting, canal, deviation, stoppage] }
+                reported_at: { type: string, format: date-time, description: UTC; default now }
+                lat: { type: number }
+                lon: { type: number }
+                values: { type: object, additionalProperties: true }
+                confirm: { type: boolean }
+      responses:
+        "201": { description: The report with the computed figures }
+        "402": { description: The report allowance of the plan is used up }
+        "409": { description: Figures to check; confirm to save }
+  /api/map/voyages/{public_id}/report-form/:
+    get:
+      tags: [noon]
+      summary: The report items (keys, labels, units) this vessel expects
+      parameters: [{ name: public_id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        "200": { description: The form definition }
+  /api/map/voyages/{public_id}/weather-track/:
+    get:
+      tags: [noon]
+      summary: The weather along the voyage's reported track
+      parameters: [{ name: public_id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        "200": { description: Weather per report position and time }
+  /api/map/weather/:
+    get:
+      tags: [noon]
+      summary: Wind, sea and the forecast at a position and time
+      parameters:
+        - { name: lat, in: query, required: true, schema: { type: number } }
+        - { name: lon, in: query, required: true, schema: { type: number } }
+        - { name: time, in: query, schema: { type: string, format: date-time, description: UTC; default now } }
+      responses:
+        "200": { description: "{time, at: {...}, series: [...], ocean, source}" }
   /api/public/navarea-zones/:
     get:
       tags: [public]

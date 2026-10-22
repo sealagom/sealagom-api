@@ -138,6 +138,60 @@ class SeaLagom:
         self._raise(r)
         return r.json()
 
+    # -- noon reports, vessels, voyages (the key signs in on /api/map/) -------------------------------
+    def _post(self, path: str, body: dict) -> dict:
+        r = self._s.post(f"{self.base}{path}", json=body, timeout=self.timeout)
+        self.last_headers = dict(r.headers)
+        if r.status_code == 409:
+            return r.json()  # figures to check: send confirm=True to save anyway
+        self._raise(r)
+        return r.json()
+
+    def account(self) -> dict:
+        return dict(self._get("/api/map/account/", {}))
+
+    def vessels(self) -> list[dict]:
+        return list(self._get("/api/map/vessels/", {}).get("vessels") or [])
+
+    def add_vessel(self, name: str, **fields) -> dict:
+        """imo, mmsi, call_sign, flag, vessel_type, fleet."""
+        return self._post("/api/map/vessels/", {"name": name, **fields})
+
+    def voyages(self, vessel_public_id: str) -> list[dict]:
+        return list(self._get(f"/api/map/vessels/{vessel_public_id}/voyages/", {}).get("voyages") or [])
+
+    def open_voyage(self, vessel_public_id: str, **fields) -> dict:
+        """number, name, departure_name, arrival_name, charterer, etd, eta, waypoints=[{lat, lon}]."""
+        return self._post(f"/api/map/vessels/{vessel_public_id}/voyages/", fields)
+
+    def voyage(self, public_id: str) -> dict:
+        return dict(self._get(f"/api/map/voyages/{public_id}/", {}))
+
+    def report_form(self, voyage_public_id: str) -> dict:
+        """The report items (keys, labels, units) the vessel expects in `values`."""
+        return dict(self._get(f"/api/map/voyages/{voyage_public_id}/report-form/", {}))
+
+    def reports(self, voyage_public_id: str) -> list[dict]:
+        return list(self._get(f"/api/map/voyages/{voyage_public_id}/reports/", {}).get("reports") or [])
+
+    def post_report(self, voyage_public_id: str, *, lat: float | None = None, lon: float | None = None, values: dict | None = None,
+                    kind: str = "noon", reported_at: str | None = None, confirm: bool = False) -> dict:
+        """A noon (or other) report from a bridge PC, a GPS logger or a script. 409 answers carry `checks`;
+        confirm=True saves anyway."""
+        body: dict[str, Any] = {"kind": kind, "values": values or {}, "confirm": confirm}
+        if lat is not None and lon is not None:
+            body["lat"], body["lon"] = lat, lon
+        if reported_at:
+            body["reported_at"] = reported_at
+        return self._post(f"/api/map/voyages/{voyage_public_id}/reports/", body)
+
+    def weather(self, lat: float, lon: float, time: str | None = None) -> dict:
+        """Wind, sea and the forecast at a position and time (UTC ISO; default now)."""
+        return dict(self._get("/api/map/weather/", {"lat": lat, "lon": lon, "time": time}))
+
+    def weather_track(self, voyage_public_id: str) -> dict:
+        return dict(self._get(f"/api/map/voyages/{voyage_public_id}/weather-track/", {}))
+
     # -- open endpoints (no key needed, but the key does no harm) -----------------------------------
     def navarea_zones(self) -> dict:
         return dict(self._get("/api/public/navarea-zones/", {}))

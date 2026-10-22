@@ -131,6 +131,31 @@ def feeds() -> str:
     return json.dumps(_get("/api/v2/feeds/"), ensure_ascii=False)[:40000]
 
 
+@mcp.tool()
+def my_vessels() -> str:
+    """The vessels and voyages of the key's account (SeaLagom Noon): names, IMO, voyages with status, last report."""
+    return json.dumps(_get("/api/map/vessels/"), ensure_ascii=False)[:40000]
+
+
+@mcp.tool()
+def post_noon_report(voyage_public_id: str, lat: float, lon: float, values: dict, kind: str = "noon",
+                     reported_at: str | None = None, confirm: bool = False) -> str:
+    """Post a report to a voyage: position, the figures in values (keys from the vessel's report form:
+    speed, distance, rpm, fuel...), kind (noon, departure, arrival, position...), reported_at ISO UTC.
+    A 409 answer lists checks; confirm=true saves anyway."""
+    body = {"kind": kind, "lat": lat, "lon": lon, "values": values, "confirm": confirm}
+    if reported_at:
+        body["reported_at"] = reported_at
+    r = requests.post(f"{BASE}/api/map/voyages/{voyage_public_id}/reports/", json=body, headers=HEADERS, timeout=60)
+    return r.text[:20000]
+
+
+@mcp.tool()
+def weather_at(lat: float, lon: float, time: str | None = None) -> str:
+    """Wind, sea state and the forecast at a position and time (ISO UTC, default now)."""
+    return json.dumps(_get("/api/map/weather/", {"lat": lat, "lon": lon, "time": time}), ensure_ascii=False)[:20000]
+
+
 if __name__ == "__main__":
     if not KEY:
         print("Set SEALAGOM_API_KEY (a key from https://www.sealagom.com/profile/?tab=api); the open tools still work without it.")

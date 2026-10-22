@@ -77,6 +77,30 @@ SEALAGOM_API_KEY=YOUR_KEY python mcp/sealagom_mcp.py
 No MCP? Give the agent the README the API itself serves, it is written for them:
 https://www.sealagom.com/api/public/api-setup-readme/
 
+## Noon reports, vessels and voyages
+
+The same key opens your fleet on the API: a bridge PC, a GPS logger or a script lists vessels,
+opens voyages and posts noon reports with the JSON the map uses.
+
+```python
+api = SeaLagom("YOUR_KEY")
+ship = api.add_vessel("MV EXAMPLE", imo="9074729", vessel_type="tanker")
+voy = api.open_voyage(ship["public_id"], number="V012", departure_name="Rotterdam", arrival_name="Singapore")
+form = api.report_form(voy["public_id"])          # the figures this vessel reports (keys, labels, units)
+api.post_report(voy["public_id"], lat=36.14, lon=-5.35, values={"speed": 13.2, "distance": 318, "fo_consumed": 24.5})
+print(api.weather(36.14, -5.35)["at"])
+```
+
+```bash
+curl -X POST https://www.sealagom.com/api/map/voyages/VOYAGE_ID/reports/ -H "X-API-Token: YOUR_KEY" \
+  -H "Content-Type: application/json" -d '{"lat": 36.14, "lon": -5.35, "values": {"speed": 13.2, "distance": 318}}'
+```
+
+Endpoints: `/api/map/account/`, `/api/map/vessels/`, `/api/map/vessels/<id>/voyages/`,
+`/api/map/voyages/<id>/`, `/reports/`, `/report-form/`, `/weather-track/`, `/api/map/weather/`
+(all in [openapi.yaml](openapi.yaml), tag `noon`). Plan limits apply per account: free accounts
+have five reports, the Noon and Fleet plans more.
+
 ## Every platform
 
 Copilot, ChatGPT, DeepSeek, Qwen, Kimi, Zhipu, Baidu, NVIDIA NIM, Gemini, Groq, Ollama, Dify, Coze,
