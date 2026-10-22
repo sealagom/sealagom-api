@@ -2,6 +2,8 @@
 
 # SeaLagom API
 
+[Русский](README.ru.md) · [Українська](README.uk.md) · [中文](README.zh.md) · [हिन्दी](README.hi.md) · [Filipino](README.tl.md) · [Español](README.es.md) · [Português](README.pt.md) · [Français](README.fr.md)
+
 Navigational warnings of the whole world, as issued by the NAVAREA coordinators and the coastal
 authorities, with positions, shapes and an analysis of every warning. One key, one base URL:
 
@@ -142,6 +144,13 @@ curl -X POST "https://www.sealagom.com/api/v2/route/convert/?to=rtz" -H "X-API-T
 The same converter runs without the API in the tools library (`js/route-convert.mjs`,
 https://www.sealagom.com/github/tools/).
 
+## Every feed
+
+Military exercises, security areas, rocket launches, cables and pipelines, offshore works and rigs, surveys,
+wrecks and drifting objects, lights and aids out of order, search and rescue, ice. By region, country,
+position or route; JSON with the key, RSS and plain text without. [FEEDS.md](FEEDS.md) lists them with
+the endpoint of each.
+
 ## Every platform
 
 Copilot, ChatGPT, Gemini, Grok, DeepSeek, Qwen, Kimi, Zhipu, Baidu, NVIDIA NIM, Groq, Ollama, Dify, Coze,
@@ -156,6 +165,15 @@ OpenAI-style tool caller) and [integrations/openai_compatible.py](integrations/o
 
 When a plan does not cover a call, the answer carries `upgrade`: the plan that unlocks it, the price
 for that request, the card link and the crypto call an agent can make on its own.
+
+## Telegram
+
+The SeaLagom bot answers in a chat: `/navarea XI` the newest warnings in force, `/near 36.1 -5.4 30`
+around a position, `/vessel al dasma` or an MMSI, `/port gibraltar`, `/stations 36.1 -5.4` the rescue
+centre and DSC stations. Link your account from Profile, Security; a Contributor account then has no
+limit in the chat, `/watch navarea XI critical` sends every new warning of the region as it is issued,
+and `/pay contributor` opens a crypto invoice right there (card on the site). `/donate 5` says thank you.
+Free chats have a few commands a day. Signal has no bot API; Telegram, Discord, Slack, Matrix do.
 
 ## Any system: drop a route, get the result
 
@@ -174,6 +192,18 @@ No browser needed: [examples/pay-from-console.sh](examples/pay-from-console.sh) 
 invoice for an API plan and the status link returns the key once the coins arrived
 (`POST /api/agent/checkout/`, then `GET` the `status_url`). Donations of any size:
 `POST /api/agent/donate/ {"amount": 0.20}`.
+
+## Apps
+
+The site installs as an app from the browser (Android, iOS, desktop). Native apps come when enough
+people ask: https://www.sealagom.com/developers/ counts the hands.
+
+## Support the service, bring a colleague
+
+Donations in any coin from 0.20 USD: `POST https://www.sealagom.com/api/agent/donate/ {"amount": 5}`
+returns the invoice link, or `/donate` in Telegram. Contributors who bring a colleague get 50 % off
+three months when the colleague subscribes to Contributor (Profile, Referrals). Where you show the
+data, credit SeaLagom, www.sealagom.com; that is the whole licence for the warnings.
 
 ## GitHub Action: check a route in CI
 

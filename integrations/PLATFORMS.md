@@ -18,6 +18,7 @@ an OpenAI-style tool caller, an OpenAPI importer, or an HTTP node. Pick the row 
 | LangChain, LlamaIndex, CrewAI, AutoGen, Semantic Kernel, Spring AI | wrap `python/sealagom.py` methods as tools, or load the OpenAPI spec | [../python/sealagom.py](../python/sealagom.py) |
 | n8n, Zapier, Make, Power Automate, Pipedream, Home Assistant, Node-RED | HTTP request node: GET `https://www.sealagom.com/api/v2/messages/?...` with header `X-API-Token` | below |
 | Excel, Power BI, Google Sheets | Power Query "From Web" / `IMPORTDATA` on the JSON, or the RSS and plain-text feeds | below |
+| Telegram (a chat with the data, watch alerts, crypto payment in the chat) | the SeaLagom bot: Profile, Security, Connect Telegram | [../README.md#telegram](../README.md#telegram) |
 | X (Twitter), Facebook Page, Instagram, Threads, Telegram, Discord, Slack, Mastodon, Bluesky | one poll loop that posts every new warning, one publisher per platform, keys by environment variable | [social.py](social.py) |
 | Windows batch, PowerShell, bash, cron, CI | the example scripts; the route drop link for tools that only POST a file | [../examples/](../examples/) |
 | ECDIS and bridge software | the route check with the ECDIS route file (RTZ, RT3) and the exports on the site | [../examples/route-check.sh](../examples/route-check.sh) |
