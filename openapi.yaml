@@ -392,7 +392,7 @@ paths:
       tags: [lookups]
       summary: The same for one MMSI
       parameters:
-        - { name: mmsi, in: path, required: true, schema: { type: integer } }
+        - { name: mmsi, in: path, required: true, schema: { type: string, description: 7 to 9 digits, leading zeros kept (coast stations start with 00) } }
       responses:
         "200": { description: As /api/v2/vessels/ }
   /api/v2/rigs/:

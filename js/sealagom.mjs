@@ -146,7 +146,7 @@ export class SeaLagom {
     return this.request("/api/v2/vessels/", { params: { q, limit } });
   }
   vessel(mmsi, limit = 50) {
-    return this.request(`/api/v2/vessels/${Number(mmsi)}/`, { params: { limit } });
+    return this.request(`/api/v2/vessels/${encodeURIComponent(String(mmsi))}/`, { params: { limit } });
   }
   rigs() {
     return this.request("/api/v2/rigs/");

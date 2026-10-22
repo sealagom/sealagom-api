@@ -231,9 +231,9 @@ class SeaLagom:
         ais (the last AIS report when the live feed is on)."""
         return dict(self._get("/api/v2/vessels/", {"q": q, "limit": limit}))
 
-    def vessel(self, mmsi: int, limit: int = 50) -> dict:
+    def vessel(self, mmsi: str | int, limit: int = 50) -> dict:
         """GET /api/v2/vessels/<mmsi>/: the same for one MMSI."""
-        return dict(self._get(f"/api/v2/vessels/{int(mmsi)}/", {"limit": limit}))
+        return dict(self._get(f"/api/v2/vessels/{mmsi}/", {"limit": limit}))
 
     def rigs(self) -> dict:
         """GET /api/v2/rigs/: mobile offshore units with their last reported positions."""
