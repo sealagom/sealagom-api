@@ -194,8 +194,10 @@ invoice for an API plan and the status link returns the key once the coins arriv
 
 ## Apps
 
-The site installs as an app from the browser (Android, iOS, desktop). Native apps come when enough
-people ask: https://www.sealagom.com/developers/ counts the hands.
+The site installs as an app from the browser (Android, iOS, desktop). The Android shell is public at
+https://github.com/sealagom/sealagom-mobile and the browser extension at https://github.com/sealagom/sealagom-extension
+(ready zip: https://www.sealagom.com/app/#extension). iOS and a desktop build come when enough people ask:
+https://www.sealagom.com/developers/ counts the hands.
 
 ## Bring a colleague
 
@@ -229,3 +231,5 @@ the key and the drop link secret. Credit "SeaLagom, www.sealagom.com" where the 
 Contact: contact@sealagom.com
 
 Brand files for integrations that show a logo: [brand/](brand/) (mark, wordmark, 512 px icon). Credit SeaLagom, www.sealagom.com.
+
+All SeaLagom code on GitHub: https://github.com/sealagom (API kit, tools, Android app, browser extension).
