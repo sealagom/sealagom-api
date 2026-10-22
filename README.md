@@ -77,6 +77,18 @@ SEALAGOM_API_KEY=YOUR_KEY python mcp/sealagom_mcp.py
 No MCP? Give the agent the README the API itself serves, it is written for them:
 https://www.sealagom.com/api/public/api-setup-readme/
 
+## Every platform
+
+Copilot, ChatGPT, DeepSeek, Qwen, Kimi, Zhipu, Baidu, NVIDIA NIM, Gemini, Groq, Ollama, Dify, Coze,
+n8n, Zapier, Make, Power Automate, Home Assistant, LangChain, Excel, Google Sheets, Telegram bots:
+[integrations/PLATFORMS.md](integrations/PLATFORMS.md) has the row for each, with
+[integrations/openai-tools.json](integrations/openai-tools.json) (function definitions for any
+OpenAI-style tool caller) and [integrations/openai_compatible.py](integrations/openai_compatible.py)
+(the same loop on any of them: change the base URL).
+
+When a plan does not cover a call, the answer carries `upgrade`: the plan that unlocks it, the price
+for that request, the card link and the crypto call an agent can make on its own.
+
 ## Any system: drop a route, get the result
 
 The same call from whatever you have: [examples/route-check.bat](examples/route-check.bat)

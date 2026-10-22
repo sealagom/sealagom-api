@@ -1,0 +1,76 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "sealagom_search_warnings",
+      "description": "Search the world's navigational warnings (NAVAREA and coastal). Returns count and warnings with text, positions and, on paid plans, the analysis (headline, severity, status, validity, keep-clear distance). The warning text is the authority.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "navarea_id": { "type": "array", "items": { "type": "integer" }, "description": "NAVAREA numbers 1..21" },
+          "country": { "type": "string", "description": "Country name, partial match, for coastal warnings" },
+          "q": { "type": "string", "description": "Words in the warning text" },
+          "date_from": { "type": "string", "description": "YYYY-MM-DD" },
+          "date_to": { "type": "string", "description": "YYYY-MM-DD" },
+          "ai_severity": { "type": "array", "items": { "type": "string", "enum": ["critical", "high", "moderate", "low", "info"] } },
+          "ai_category": { "type": "array", "items": { "type": "string" }, "description": "military, cables, offshore, sar, piracy_or_security, drifting_object, wreck, aids_to_navigation, ice, survey, other" },
+          "ai_in_force": { "type": "boolean", "description": "Only warnings in force right now" },
+          "topic": { "type": "string", "description": "A feed: ice, military, cables, offshore..." },
+          "include_archived": { "type": "boolean" },
+          "include_ai_analysis": { "type": "boolean", "default": true },
+          "page": { "type": "integer", "default": 1 },
+          "page_size": { "type": "integer", "default": 20, "maximum": 200 }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "sealagom_warnings_near",
+      "description": "Warnings in force within a radius of a position, with distance and bearing to the nearest point.",
+      "parameters": {
+        "type": "object",
+        "required": ["lat", "lon"],
+        "properties": {
+          "lat": { "type": "number" },
+          "lon": { "type": "number" },
+          "radius_nm": { "type": "number", "default": 30, "maximum": 200 }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "sealagom_route_check",
+      "description": "Check a voyage: the NAVAREAs crossed in order and every warning within the corridor, with distance along the route and whether it is in force at the ETA of that point.",
+      "parameters": {
+        "type": "object",
+        "required": ["waypoints"],
+        "properties": {
+          "waypoints": { "type": "array", "minItems": 2, "items": { "type": "object", "required": ["lat", "lon"], "properties": { "lat": { "type": "number" }, "lon": { "type": "number" } } } },
+          "speed_kn": { "type": "number", "default": 12 },
+          "corridor_nm": { "type": "number", "default": 10 },
+          "departure": { "type": "string", "description": "ISO 8601 UTC; default now" }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "sealagom_navareas",
+      "description": "The 21 NAVAREAs with coordinator, the region id to use as navarea_id, and warnings in force.",
+      "parameters": { "type": "object", "properties": {} }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "sealagom_feeds",
+      "description": "Every themed feed (military, cables, offshore, rigs, ice...) with its endpoint and how many of its warnings are in force.",
+      "parameters": { "type": "object", "properties": {} }
+    }
+  }
+]
