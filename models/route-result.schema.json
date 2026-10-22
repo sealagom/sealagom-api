@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.sealagom.com/schemas/route-result.schema.json",
+  "title": "RouteResult",
+  "description": "The answer of POST /api/v2/route/ and the drop link: the route length, the NAVAREAs crossed in order and every active warning within the corridor.",
+  "type": "object",
+  "required": ["route_nm", "navareas", "count", "results"],
+  "properties": {
+    "source": { "type": "string", "description": "The file name, or json." },
+    "waypoints": { "type": "integer" },
+    "route_nm": { "type": "number", "description": "Route length in nautical miles (rhumb-line legs)." },
+    "departure": { "type": "string", "format": "date-time" },
+    "speed_kn": { "type": "number" },
+    "corridor_nm": { "type": "number" },
+    "navareas": {
+      "type": "array",
+      "description": "In the order the route enters them.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "examples": ["I", "XI"] },
+          "name": { "type": "string" },
+          "coordinator": { "type": "string" },
+          "navarea_id": { "type": ["integer", "null"], "description": "The region id to use with navarea_id=; null for NAVAREA XXI." },
+          "warnings_in_force": { "type": ["integer", "null"] }
+        }
+      }
+    },
+    "count": { "type": "integer" },
+    "results": {
+      "type": "array",
+      "description": "Warnings along the route, most pressing first.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "scope": { "type": "string", "enum": ["navarea", "coastal"] },
+          "region_id": { "type": "integer" },
+          "region_title": { "type": "string" },
+          "id": { "type": "integer" },
+          "number": { "type": "string" },
+          "href": { "type": "string", "description": "The warning page on the site, relative." },
+          "added_on": { "type": "string", "format": "date-time" },
+          "distance_nm": { "type": "number", "description": "Closest approach of the route to the warning." },
+          "along_nm": { "type": "number", "description": "Where along the route the closest point lies." },
+          "verdict": { "type": "string", "description": "in_force, upcoming, expired, unknown: the warning's status at the ETA of that point." },
+          "ai": { "type": ["object", "null"], "description": "Compact analysis: headline, category, severity, status, validity." }
+        }
+      }
+    }
+  }
+}

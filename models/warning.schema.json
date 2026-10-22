@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.sealagom.com/schemas/warning.schema.json",
+  "title": "Warning",
+  "description": "One navigational warning as served by GET /api/v2/messages/ (and inside regions as active_messages / archived_messages, without the scope and region fields). The stable key is (scope, region_id, number).",
+  "type": "object",
+  "required": ["id", "number", "content", "added_on"],
+  "properties": {
+    "scope": { "type": "string", "enum": ["navarea", "coastal"] },
+    "region_id": { "type": "integer", "description": "The region the warning belongs to (navarea_id or coastal_id)." },
+    "region_title": { "type": "string", "examples": ["NAVAREA I", "NAVAREA II Coastal"] },
+    "country": { "type": "string" },
+    "id": { "type": "integer", "description": "Row id; unique within (scope, is_archived)." },
+    "number": { "type": "string", "description": "Warning number as broadcast.", "examples": ["1234/26", "WZ 1200"] },
+    "title": { "type": "string" },
+    "content": { "type": "string", "description": "Full warning text as broadcast, original language." },
+    "content_en": { "type": "string", "description": "English text: the official English version or a machine translation." },
+    "source_language": { "type": "string", "examples": ["en", "fr", "zh", "tr"] },
+    "added_on": { "type": "string", "format": "date-time", "description": "When SeaLagom received it (UTC)." },
+    "cancel_date": { "type": ["string", "null"], "format": "date-time" },
+    "is_archived": { "type": "boolean", "description": "Cancelled or expired." },
+    "archived_on": { "type": ["string", "null"], "format": "date-time" },
+    "coordinates": {
+      "description": "Positions as printed (list of strings); with include_enhanced_coordinates an object with decimal, DMS, GeoJSON and map pairs. null without access.",
+      "oneOf": [{ "type": "array", "items": { "type": "string" } }, { "$ref": "#/$defs/EnhancedCoordinates" }, { "type": "null" }]
+    },
+    "keywords": { "type": ["object", "null"], "description": "Keyword map, e.g. {hazard, location, action}. Full API." },
+    "geo_features": { "oneOf": [{ "$ref": "#/$defs/GeoFeatures" }, { "type": "null" }] },
+    "ai_analysis": { "oneOf": [{ "$ref": "analysis.schema.json" }, { "type": "null" }], "description": "null when not requested, not in the plan or not analysed yet." },
+    "ice": { "type": "object", "description": "Ice feed only.", "properties": { "type": { "type": "string" }, "reason": { "type": "string" } } },
+    "feed": { "type": "object", "description": "Themed feed only.", "properties": { "category": { "type": "string" } } }
+  },
+  "$defs": {
+    "EnhancedCoordinates": {
+      "type": "object",
+      "properties": {
+        "decimal": { "type": "array", "items": { "type": "object", "properties": { "lat": { "type": "number" }, "lon": { "type": "number" } } } },
+        "dms": { "type": "array", "items": { "type": "string" } },
+        "geojson": { "type": "object" },
+        "map": { "type": "array", "items": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 } }
+      }
+    },
+    "GeoFeatures": {
+      "type": "object",
+      "description": "Areas, circles, lines, lanes and sectors read from the warning, with decimal points.",
+      "properties": {
+        "version": { "type": "integer" },
+        "message_profile": { "type": "string" },
+        "multi_zone": { "type": "boolean" },
+        "zone_labels": { "type": "array", "items": { "type": "string" } },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "kind": { "type": "string", "examples": ["area", "circle", "line", "lane", "point", "sector"] },
+              "label": { "type": "string" },
+              "closed": { "type": "boolean" },
+              "radius_nm": { "type": "number" },
+              "points": {
+                "type": "array",
+                "items": { "type": "object", "properties": { "lat": { "type": "number" }, "lon": { "type": "number" }, "text": { "type": "string" } } }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
