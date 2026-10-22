@@ -14,7 +14,7 @@ Base URLs: OpenAI https://api.openai.com/v1 | DeepSeek https://api.deepseek.com/
 Qwen https://dashscope.aliyuncs.com/compatible-mode/v1 | Kimi https://api.moonshot.cn/v1 |
 Zhipu https://open.bigmodel.cn/api/paas/v4 | NVIDIA NIM https://integrate.api.nvidia.com/v1 |
 Groq https://api.groq.com/openai/v1 | Mistral https://api.mistral.ai/v1 | OpenRouter https://openrouter.ai/api/v1 |
-Ollama http://localhost:11434/v1 (api key "ollama").
+Grok (xAI) https://api.x.ai/v1 | Ollama http://localhost:11434/v1 (api key "ollama").
 """
 
 from __future__ import annotations
@@ -64,16 +64,33 @@ def call_tool(name: str, args: dict) -> str:
                              "keep_clear_nm": ai.get("keep_clear_nm"), "url": f"{SEALAGOM}/{w.get('scope')}/{w.get('region_id')}/message/{w.get('id')}/"})
             return json.dumps({"count": d.get("count"), "notes": (d.get("meta") or {}).get("warnings"), "upgrade": (d.get("meta") or {}).get("upgrade"), "warnings": rows}, ensure_ascii=False)
         if name == "sealagom_warnings_near":
-            r = requests.get(f"{SEALAGOM}/api/public/warnings/near/", params=_params(args), headers=HEADERS, timeout=60)
+            r = requests.get(f"{SEALAGOM}/api/v2/near/", params=_params(args), headers=HEADERS, timeout=60)
             return r.text[:60000]
         if name == "sealagom_route_check":
             r = requests.post(f"{SEALAGOM}/api/v2/route/", json=args, headers=HEADERS, timeout=120)
             return r.text[:80000]
         if name == "sealagom_navareas":
-            d = requests.get(f"{SEALAGOM}/api/public/navarea-zones/", headers=HEADERS, timeout=60).json()
+            d = requests.get(f"{SEALAGOM}/api/v2/navarea-zones/", headers=HEADERS, timeout=60).json()
             return json.dumps([{k: (f.get("properties") or {}).get(k) for k in ("id", "name", "coordinator", "navarea_id", "in_force")} for f in d.get("features") or []])
         if name == "sealagom_feeds":
             return requests.get(f"{SEALAGOM}/api/v2/feeds/", headers=HEADERS, timeout=60).text[:40000]
+        if name == "sealagom_find_port":
+            if args.pop("top", False):
+                args.update({"sort": "rank", "top": 1})
+            return requests.get(f"{SEALAGOM}/api/v2/ports/", params=_params({**args, "page_size": 20}), headers=HEADERS, timeout=60).text[:30000]
+        if name == "sealagom_port_details":
+            d = requests.get(f"{SEALAGOM}/api/v2/ports/{args.get('slug', '')}/", headers=HEADERS, timeout=60).json()
+            (d.get("port") or {}).pop("images", None)
+            return json.dumps(d, ensure_ascii=False, default=str)[:40000]
+        if name == "sealagom_stations_near":
+            return requests.get(f"{SEALAGOM}/api/v2/stations/near/", params=_params(args), headers=HEADERS, timeout=60).text[:30000]
+        if name == "sealagom_find_vessel":
+            return requests.get(f"{SEALAGOM}/api/v2/vessels/", params=_params({**args, "limit": 30}), headers=HEADERS, timeout=60).text[:40000]
+        if name == "sealagom_convert_route":
+            body = {"waypoints": [{"lat": p[0], "lon": p[1]} for p in args.get("waypoints") or []], "name": args.get("name") or "Route"}
+            return requests.post(f"{SEALAGOM}/api/v2/route/convert/", params={"to": args.get("to") or "rtz"}, json=body, headers=HEADERS, timeout=60).text[:200000]
+        if name == "sealagom_rigs":
+            return requests.get(f"{SEALAGOM}/api/v2/rigs/", headers=HEADERS, timeout=60).text[:40000]
     except Exception as exc:  # noqa: BLE001
         return json.dumps({"error": str(exc)[:200]})
     return json.dumps({"error": f"unknown tool {name}"})

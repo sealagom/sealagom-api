@@ -91,10 +91,16 @@ claude mcp add sealagom -e SEALAGOM_API_KEY=YOUR_KEY -- python /path/to/sealagom
 | Tool | Asks the API | Typical question |
 |---|---|---|
 | `search_warnings` | `/api/v2/messages/` with the analysis | "Critical warnings in NAVAREA XI this week" |
-| `warnings_near` | `/api/public/warnings/near/` | "Anything within 30 NM of 36.1N 5.4W?" |
+| `warnings_near` | `/api/v2/near/` | "Anything within 30 NM of 36.1N 5.4W?" |
 | `route_check` | `/api/v2/route/` | "Check this passage: Dover to Gibraltar at 14 knots" |
-| `navareas` | `/api/public/navarea-zones/` | "Which NAVAREA covers the Sea of Okhotsk?" |
+| `navareas` | `/api/v2/navarea-zones/` | "Which NAVAREA covers the Sea of Okhotsk?" |
 | `feeds` | `/api/v2/feeds/` | "What themed feeds exist and how big are they?" |
+| `find_port`, `port_details` | `/api/v2/ports/`, `/api/v2/ports/<slug>/` | "Pilot boarding and VHF channels for Gibraltar?" |
+| `stations_near` | `/api/v2/stations/near/` | "Which MRCC covers 36N 5W, and the DSC stations?" |
+| `find_vessel` | `/api/v2/vessels/` | "Any warning about MV AL DASMA? MMSI 447123000?" |
+| `convert_route` | `/api/v2/route/convert/` | "Write these waypoints as an RTZ for the ECDIS" |
+| `rigs` | `/api/v2/rigs/` | "Which drilling units are reported in the North Sea?" |
+| `my_vessels`, `post_noon_report`, `weather_at` | `/api/map/...` | "Post the noon report for V012: 36.1N 5.4W, 318 NM, 13.2 kn" |
 
 Free keys answer `search_warnings` on active warnings; archives, the analysis fields and the feeds
 need a paid plan, and the tool says so in `error`/`hint` when a call is refused.

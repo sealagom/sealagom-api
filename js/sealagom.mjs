@@ -115,10 +115,76 @@ export class SeaLagom {
     return this.request("/api/v2/route/", { method: "POST", form });
   }
 
-  navareaZones() {
-    return this.request("/api/public/navarea-zones/");
+  // -- lookups: ports, stations, vessels and MMSI, rigs, zones, lights, stats ---------------------
+  /** Warnings in force near a position, with distance and bearing. */
+  near(lat, lon, radius_nm = 30) {
+    return this.request("/api/v2/near/", { params: { lat, lon, radius_nm } });
+  }
+  /** Ports by name, UN/LOCODE or country, or the nearest to { lat, lon }; top: the main ports first. */
+  ports(q = "", { lat, lon, top = false, page = 1, page_size = 40 } = {}) {
+    return this.request("/api/v2/ports/", { params: { q: q || undefined, lat, lon, page, page_size, ...(top ? { sort: "rank", top: 1 } : {}) } });
+  }
+  /** One port: time zone, depths, approach and pilotage, VTS, anchorages, restrictions, facilities, warnings, routes. */
+  port(slug) {
+    return this.request(`/api/v2/ports/${encodeURIComponent(slug)}/`);
+  }
+  portDistance(fromSlug, toSlug) {
+    return this.request("/api/v2/port-distances/", { params: { from: fromSlug, to: toSlug } });
+  }
+  /** Every rescue centre and DSC coast station (NGA Pub 117), with MMSI. */
+  stations() {
+    return this.request("/api/v2/stations/");
   }
   stationsNear(lat, lon, radius_nm = 200, limit = 12) {
-    return this.request("/api/public/coast-stations/near/", { params: { lat, lon, radius_nm, limit } });
+    return this.request("/api/v2/stations/near/", { params: { lat, lon, radius_nm, limit } });
+  }
+  station(id) {
+    return this.request(`/api/v2/stations/${Number(id)}/`);
+  }
+  /** A vessel by name, call sign or MMSI: the warnings naming it, its rows (name, MMSI, call sign), stations with that MMSI, live AIS when on. */
+  vessels(q, limit = 50) {
+    return this.request("/api/v2/vessels/", { params: { q, limit } });
+  }
+  vessel(mmsi, limit = 50) {
+    return this.request(`/api/v2/vessels/${Number(mmsi)}/`, { params: { limit } });
+  }
+  rigs() {
+    return this.request("/api/v2/rigs/");
+  }
+  zones() {
+    return this.request("/api/v2/zones/");
+  }
+  navareaZones() {
+    return this.request("/api/v2/navarea-zones/");
+  }
+  lights({ scope, region_id, country } = {}) {
+    return this.request("/api/v2/lights/", { params: { scope, region_id, country } });
+  }
+  stats() {
+    return this.request("/api/v2/stats/");
+  }
+
+  // -- route converter: any route in, RTZ, GPX, KML, CSV or NMEA out (the file as text) ------------
+  async convertRoute(waypoints, to = "rtz", name = "") {
+    const wps = waypoints.map((p) => (Array.isArray(p) ? { lat: p[0], lon: p[1] } : p));
+    return this.requestText(`/api/v2/route/convert/?to=${encodeURIComponent(to)}`, { method: "POST", json: { waypoints: wps, name } });
+  }
+  async convertRouteFile(file, to = "rtz") {
+    const form = new FormData();
+    if (file instanceof Blob) form.append("file", file, file.name || "route");
+    else form.append("file", new Blob([file.bytes]), file.name || "route");
+    return this.requestText(`/api/v2/route/convert/?to=${encodeURIComponent(to)}`, { method: "POST", form });
+  }
+  async requestText(path, { method = "GET", json, form } = {}) {
+    const headers = { "X-API-Token": this.key };
+    let body;
+    if (json !== undefined) {
+      headers["Content-Type"] = "application/json";
+      body = JSON.stringify(json);
+    } else if (form) body = form;
+    const r = await this.fetch(`${this.base}${path}`, { method, headers, body });
+    this.lastHeaders = Object.fromEntries(r.headers.entries());
+    if (!r.ok) throw new SeaLagomError(r.status, (await r.text().catch(() => "")).slice(0, 200) || r.statusText);
+    return r.text();
   }
 }

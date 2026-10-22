@@ -10,8 +10,11 @@ an OpenAI-style tool caller, an OpenAPI importer, or an HTTP node. Pick the row 
 | DeepSeek, Qwen / Tongyi (DashScope), Moonshot Kimi, Zhipu GLM, Baidu ERNIE (Qianfan), MiniMax, Doubao, Yi | OpenAI-compatible endpoints: same tools, change `LLM_BASE_URL` | [openai_compatible.py](openai_compatible.py) |
 | NVIDIA NIM (integrate.api.nvidia.com), NeMo Agent Toolkit | OpenAI-compatible: same tools; the toolkit registers functions from the OpenAPI spec | [openai_compatible.py](openai_compatible.py), [../openapi.yaml](../openapi.yaml) |
 | Groq, Mistral, Together, Fireworks, OpenRouter, Ollama, vLLM, LM Studio | OpenAI-compatible | [openai_compatible.py](openai_compatible.py) |
-| Gemini (Google AI Studio, Vertex) | function declarations: the same JSON schemas as `parameters` | [openai-tools.json](openai-tools.json) |
-| ChatGPT custom GPT (Actions), Dify, Coze, FastGPT, Flowise, Langflow, n8n AI agent | import the OpenAPI spec; auth = API key in header `X-API-Token` | [../openapi.yaml](../openapi.yaml) |
+| Gemini (Google AI Studio, Vertex) | function declarations built from the same JSON schemas; the loop is written | [gemini.py](gemini.py) |
+| Grok (xAI) | OpenAI-compatible, base URL https://api.x.ai/v1 | [openai_compatible.py](openai_compatible.py) |
+| Google Sheets, Google Docs | Apps Script: `=SEALAGOM_WARNINGS(1)`, `=SEALAGOM_PORT("gibraltar")`, a Docs menu that inserts the warnings | [google-apps-script.gs](google-apps-script.gs) |
+| Google Earth, Google My Maps, Google Maps | KML: routes through the converter, warnings and NAVAREA limits through a short script | [google-maps.md](google-maps.md) |
+| ChatGPT custom GPT (Actions), Dify, Coze, FastGPT, Flowise, Langflow, n8n AI agent | import the OpenAPI spec; auth = API key, custom header `X-API-Token` | [../openapi.yaml](../openapi.yaml) |
 | LangChain, LlamaIndex, CrewAI, AutoGen, Semantic Kernel, Spring AI | wrap `python/sealagom.py` methods as tools, or load the OpenAPI spec | [../python/sealagom.py](../python/sealagom.py) |
 | n8n, Zapier, Make, Power Automate, Pipedream, Home Assistant, Node-RED | HTTP request node: GET `https://www.sealagom.com/api/v2/messages/?...` with header `X-API-Token` | below |
 | Excel, Power BI, Google Sheets | Power Query "From Web" / `IMPORTDATA` on the JSON, or the RSS and plain-text feeds | below |

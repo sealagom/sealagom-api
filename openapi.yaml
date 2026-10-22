@@ -24,6 +24,8 @@ tags:
   - name: route
   - name: noon
     description: Noon reports, vessels, voyages and weather. The same key; plan limits per account.
+  - name: lookups
+    description: Ports, stations, vessels and MMSI, rigs, zones, lights, stats. The same key, one request each.
   - name: public
     description: No key needed.
 paths:
@@ -173,7 +175,7 @@ paths:
   /api/map/account/:
     get:
       tags: [noon]
-      summary: The key's account: vessels, voyages, fleets, invitations, plan usage
+      summary: "The account of the key: vessels, voyages, fleets, invitations, plan usage"
       responses:
         "200": { description: The account }
   /api/map/vessels/:
@@ -291,36 +293,142 @@ paths:
         - { name: time, in: query, schema: { type: string, format: date-time, description: UTC; default now } }
       responses:
         "200": { description: "{time, at: {...}, series: [...], ocean, source}" }
-  /api/public/navarea-zones/:
-    get:
-      tags: [public]
-      summary: The 21 NAVAREAs as GeoJSON (limits from WMO-No. 558), with coordinator and warnings in force
-      security: []
+  /api/v2/route/convert/:
+    post:
+      tags: [route]
+      summary: "Route converter: any route file in, RTZ, GPX, KML, CSV or NMEA out"
+      parameters:
+        - { name: to, in: query, required: true, schema: { type: string, enum: [rtz, gpx, kml, csv, nmea, json] } }
+      requestBody:
+        content:
+          multipart/form-data:
+            schema: { type: object, properties: { file: { type: string, format: binary, description: "RTZ, RT3, GPX, KML, CSV or NMEA" } } }
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                waypoints: { type: array, items: { type: object, required: [lat, lon], properties: { lat: { type: number }, lon: { type: number }, name: { type: string } } } }
       responses:
-        "200": { description: A GeoJSON FeatureCollection }
-  /api/public/coast-stations/near/:
+        "200": { description: "The converted file (Content-Disposition attachment; header X-Waypoints)" }
+  /api/v2/near/:
     get:
-      tags: [public]
-      summary: Rescue centres and DSC coast stations near a position (NGA Pub 117)
-      security: []
+      tags: [lookups]
+      summary: Warnings in force near a position, with distance and bearing
       parameters:
         - { name: lat, in: query, required: true, schema: { type: number } }
         - { name: lon, in: query, required: true, schema: { type: number } }
-        - { name: radius_nm, in: query, schema: { type: number, default: 200 } }
-        - { name: limit, in: query, schema: { type: integer, default: 12 } }
+        - { name: radius_nm, in: query, schema: { type: number, default: 30, maximum: 200 } }
       responses:
-        "200": { description: Stations and the rescue centres covering the position }
-  /api/public/port-distances/:
+        "200": { description: "{count, warnings: [...]}" }
+  /api/v2/ports/:
     get:
-      tags: [public]
+      tags: [lookups]
+      summary: Ports by name, UN/LOCODE or country, or the nearest to a position
+      parameters:
+        - { name: q, in: query, schema: { type: string } }
+        - { name: lat, in: query, schema: { type: number } }
+        - { name: lon, in: query, schema: { type: number } }
+        - { name: sort, in: query, schema: { type: string, enum: [rank] } }
+        - { name: top, in: query, schema: { type: integer, enum: [1], description: the main ports only } }
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: page_size, in: query, schema: { type: integer, default: 40, maximum: 100 } }
+      responses:
+        "200": { description: "{ports: [{slug, name, country_code, un_locode, lat_decimal, lon_decimal, harbor_size, navarea_roman, rank}], total_count, page, total_pages}" }
+  /api/v2/ports/{slug}/:
+    get:
+      tags: [lookups]
+      summary: "One port: time zone, depths, approach and pilotage, VTS, anchorages, restrictions, facilities, warnings, routes"
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: "{port: {...}, warning_messages, attached_resources, related_resources, routes}" }
+  /api/v2/port-distances/:
+    get:
+      tags: [lookups]
       summary: Sea distance between two ports along shared ECDIS routes
-      security: []
       parameters:
         - { name: from, in: query, schema: { type: string, description: port slug } }
         - { name: to, in: query, schema: { type: string } }
         - { name: port, in: query, schema: { type: string } }
       responses:
         "200": { description: Distances in NM }
+  /api/v2/stations/:
+    get:
+      tags: [lookups]
+      summary: Every rescue coordination centre and DSC coast station (NGA Pub 117), with MMSI
+      responses:
+        "200": { description: "{count, stations: [{id, kind, name, country, mmsi, lat, lon, bands, max_range_nm}]}" }
+  /api/v2/stations/near/:
+    get:
+      tags: [lookups]
+      summary: Rescue centres covering a position and DSC coast stations in range
+      parameters:
+        - { name: lat, in: query, required: true, schema: { type: number } }
+        - { name: lon, in: query, required: true, schema: { type: number } }
+        - { name: radius_nm, in: query, schema: { type: number, default: 200, maximum: 600 } }
+        - { name: limit, in: query, schema: { type: integer, default: 12, maximum: 30 } }
+      responses:
+        "200": { description: "{rcc_covering, rcc_near, dsc_near, test_nearest}" }
+  /api/v2/stations/{id}/:
+    get:
+      tags: [lookups]
+      summary: One station with bands, watch times and contacts
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200": { description: The station }
+  /api/v2/vessels/:
+    get:
+      tags: [lookups]
+      summary: "A vessel by name, call sign or MMSI: the warnings naming it, its rows, stations with that MMSI, live AIS when on"
+      parameters:
+        - { name: q, in: query, required: true, schema: { type: string, description: "name, call sign or MMSI (3+ characters)" } }
+        - { name: limit, in: query, schema: { type: integer, default: 50, maximum: 200 } }
+      responses:
+        "200": { description: "{query, mmsi, vessels: [{name, mmsi, call_sign, imo, flag, type, warnings}], warnings: [{scope, region, region_id, number, in_force, added_on, url, vessels, headline*, severity*, status*, mariner_action*}], stations, ais, ais_live, count, meta?} (* Full API)" }
+  /api/v2/vessels/{mmsi}/:
+    get:
+      tags: [lookups]
+      summary: The same for one MMSI
+      parameters:
+        - { name: mmsi, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200": { description: As /api/v2/vessels/ }
+  /api/v2/rigs/:
+    get:
+      tags: [lookups]
+      summary: Mobile offshore drilling units with their last reported positions
+      responses:
+        "200": { description: "{count, rigs: [...]}" }
+  /api/v2/zones/:
+    get:
+      tags: [lookups]
+      summary: Nautical time zones and satcom footprints
+      responses:
+        "200": { description: "{zones, satcom}" }
+  /api/v2/navarea-zones/:
+    get:
+      tags: [lookups]
+      summary: The 21 NAVAREAs as GeoJSON (limits from WMO-No. 558), with coordinator and warnings in force
+      responses:
+        "200": { description: A GeoJSON FeatureCollection }
+  /api/v2/lights/:
+    get:
+      tags: [lookups]
+      summary: Aids to navigation reported out of order (Full API; other plans get count and locked=true)
+      parameters:
+        - { name: scope, in: query, schema: { type: string, enum: [navarea, coastal] } }
+        - { name: region_id, in: query, schema: { type: integer } }
+        - { name: country, in: query, schema: { type: string } }
+      responses:
+        "200": { description: "{count, conditions, locked, regions, aids}" }
+  /api/v2/stats/:
+    get:
+      tags: [lookups]
+      summary: The public figures of the service
+      responses:
+        "200": { description: The figures }
   /feeds/warnings.xml:
     get:
       tags: [public]

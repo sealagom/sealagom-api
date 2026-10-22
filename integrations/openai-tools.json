@@ -7,19 +7,73 @@
       "parameters": {
         "type": "object",
         "properties": {
-          "navarea_id": { "type": "array", "items": { "type": "integer" }, "description": "NAVAREA numbers 1..21" },
-          "country": { "type": "string", "description": "Country name, partial match, for coastal warnings" },
-          "q": { "type": "string", "description": "Words in the warning text" },
-          "date_from": { "type": "string", "description": "YYYY-MM-DD" },
-          "date_to": { "type": "string", "description": "YYYY-MM-DD" },
-          "ai_severity": { "type": "array", "items": { "type": "string", "enum": ["critical", "high", "moderate", "low", "info"] } },
-          "ai_category": { "type": "array", "items": { "type": "string" }, "description": "military, cables, offshore, sar, piracy_or_security, drifting_object, wreck, aids_to_navigation, ice, survey, other" },
-          "ai_in_force": { "type": "boolean", "description": "Only warnings in force right now" },
-          "topic": { "type": "string", "description": "A feed: ice, military, cables, offshore..." },
-          "include_archived": { "type": "boolean" },
-          "include_ai_analysis": { "type": "boolean", "default": true },
-          "page": { "type": "integer", "default": 1 },
-          "page_size": { "type": "integer", "default": 20, "maximum": 200 }
+          "navarea_id": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "NAVAREA numbers 1..21"
+          },
+          "country": {
+            "type": "string",
+            "description": "Country name, partial match, for coastal warnings"
+          },
+          "q": {
+            "type": "string",
+            "description": "Words in the warning text"
+          },
+          "date_from": {
+            "type": "string",
+            "description": "YYYY-MM-DD"
+          },
+          "date_to": {
+            "type": "string",
+            "description": "YYYY-MM-DD"
+          },
+          "ai_severity": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "critical",
+                "high",
+                "moderate",
+                "low",
+                "info"
+              ]
+            }
+          },
+          "ai_category": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "military, cables, offshore, sar, piracy_or_security, drifting_object, wreck, aids_to_navigation, ice, survey, other"
+          },
+          "ai_in_force": {
+            "type": "boolean",
+            "description": "Only warnings in force right now"
+          },
+          "topic": {
+            "type": "string",
+            "description": "A feed: ice, military, cables, offshore..."
+          },
+          "include_archived": {
+            "type": "boolean"
+          },
+          "include_ai_analysis": {
+            "type": "boolean",
+            "default": true
+          },
+          "page": {
+            "type": "integer",
+            "default": 1
+          },
+          "page_size": {
+            "type": "integer",
+            "default": 20,
+            "maximum": 200
+          }
         }
       }
     }
@@ -31,11 +85,22 @@
       "description": "Warnings in force within a radius of a position, with distance and bearing to the nearest point.",
       "parameters": {
         "type": "object",
-        "required": ["lat", "lon"],
+        "required": [
+          "lat",
+          "lon"
+        ],
         "properties": {
-          "lat": { "type": "number" },
-          "lon": { "type": "number" },
-          "radius_nm": { "type": "number", "default": 30, "maximum": 200 }
+          "lat": {
+            "type": "number"
+          },
+          "lon": {
+            "type": "number"
+          },
+          "radius_nm": {
+            "type": "number",
+            "default": 30,
+            "maximum": 200
+          }
         }
       }
     }
@@ -47,12 +112,41 @@
       "description": "Check a voyage: the NAVAREAs crossed in order and every warning within the corridor, with distance along the route and whether it is in force at the ETA of that point.",
       "parameters": {
         "type": "object",
-        "required": ["waypoints"],
+        "required": [
+          "waypoints"
+        ],
         "properties": {
-          "waypoints": { "type": "array", "minItems": 2, "items": { "type": "object", "required": ["lat", "lon"], "properties": { "lat": { "type": "number" }, "lon": { "type": "number" } } } },
-          "speed_kn": { "type": "number", "default": 12 },
-          "corridor_nm": { "type": "number", "default": 10 },
-          "departure": { "type": "string", "description": "ISO 8601 UTC; default now" }
+          "waypoints": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "object",
+              "required": [
+                "lat",
+                "lon"
+              ],
+              "properties": {
+                "lat": {
+                  "type": "number"
+                },
+                "lon": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "speed_kn": {
+            "type": "number",
+            "default": 12
+          },
+          "corridor_nm": {
+            "type": "number",
+            "default": 10
+          },
+          "departure": {
+            "type": "string",
+            "description": "ISO 8601 UTC; default now"
+          }
         }
       }
     }
@@ -62,7 +156,10 @@
     "function": {
       "name": "sealagom_navareas",
       "description": "The 21 NAVAREAs with coordinator, the region id to use as navarea_id, and warnings in force.",
-      "parameters": { "type": "object", "properties": {} }
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
     }
   },
   {
@@ -70,7 +167,149 @@
     "function": {
       "name": "sealagom_feeds",
       "description": "Every themed feed (military, cables, offshore, rigs, ice...) with its endpoint and how many of its warnings are in force.",
-      "parameters": { "type": "object", "properties": {} }
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "sealagom_find_port",
+      "description": "Ports by name, UN/LOCODE or country, or the nearest to a position. Rows have slug (use it with sealagom_port_details), name, country, position, harbour size, NAVAREA.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "q": {
+            "type": "string"
+          },
+          "lat": {
+            "type": "number"
+          },
+          "lon": {
+            "type": "number"
+          },
+          "top": {
+            "type": "boolean",
+            "description": "the main ports first"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "sealagom_port_details",
+      "description": "One port: time zone, tide range, depths, max draft, harbour type, shelter, approach and pilotage, VTS and VHF, anchorages, restrictions, facilities, warnings near it, shared routes.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "sealagom_stations_near",
+      "description": "Rescue coordination centres covering a position and DSC coast stations in range (NGA Pub 117): MMSI, bands, watch times, telephone, e-mail.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number"
+          },
+          "lon": {
+            "type": "number"
+          },
+          "radius_nm": {
+            "type": "number",
+            "default": 200
+          }
+        },
+        "required": [
+          "lat",
+          "lon"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "sealagom_find_vessel",
+      "description": "A vessel by name, call sign or MMSI: every warning naming it, the vessel rows (name, MMSI, call sign), coast stations with that MMSI, the last AIS report when the live feed is on.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "q": {
+            "type": "string",
+            "description": "name, call sign or MMSI"
+          }
+        },
+        "required": [
+          "q"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "sealagom_convert_route",
+      "description": "Write waypoints as a route file: rtz (ECDIS), gpx, kml (Google Earth, My Maps), csv or nmea. Returns the file text.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "waypoints": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "description": "[[lat, lon], ...]"
+          },
+          "to": {
+            "type": "string",
+            "enum": [
+              "rtz",
+              "gpx",
+              "kml",
+              "csv",
+              "nmea"
+            ]
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "waypoints"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "sealagom_rigs",
+      "description": "Mobile offshore drilling units with their last reported positions.",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
     }
   }
 ]

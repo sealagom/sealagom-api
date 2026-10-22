@@ -3,7 +3,8 @@
     pip install "mcp[cli]" requests
     SEALAGOM_API_KEY=YOUR_KEY python sealagom_mcp.py          # stdio transport, what editors expect
 
-Tools: search_warnings, warnings_near, route_check, navareas, feeds. Each returns compact JSON the
+Tools: search_warnings, warnings_near, route_check, navareas, feeds, find_port, port_details, stations_near,
+find_vessel, convert_route, rigs, my_vessels, post_noon_report, weather_at. Each returns compact JSON the
 model can read; the warning text is the authority, the analysis fields are machine-made.
 Config snippets for every editor are in README.md next to this file.
 """
@@ -24,7 +25,9 @@ HEADERS = {"X-API-Token": KEY, "Accept": "application/json", "User-Agent": "seal
 mcp = FastMCP("SeaLagom", instructions=(
     "Navigational warnings of the whole world (NAVAREA and coastal), with positions, shapes and an analysis of "
     "every warning. Use search_warnings for regions, words, dates, severities and feeds; warnings_near for a "
-    "position; route_check for a voyage; navareas for the regions; feeds for the themed feeds. The warning text "
+    "position; route_check for a voyage; navareas for the regions; feeds for the themed feeds; find_port and "
+    "port_details for ports (pilotage, VTS, depths, facilities); stations_near for rescue centres and DSC coast "
+    "stations; find_vessel for a vessel by name, call sign or MMSI; convert_route for route files. The warning text "
     "is the authority; the analysis can be wrong. Credit SeaLagom, www.sealagom.com, when showing the data."))
 
 
@@ -88,7 +91,7 @@ def search_warnings(navarea_id: list[int] | None = None, coastal_id: list[int] |
 @mcp.tool()
 def warnings_near(lat: float, lon: float, radius_nm: float = 30) -> str:
     """Warnings in force within radius_nm (up to 200) of a position, with distance and bearing to the nearest point."""
-    data = _get("/api/public/warnings/near/", {"lat": lat, "lon": lon, "radius_nm": min(200.0, max(1.0, radius_nm))})
+    data = _get("/api/v2/near/", {"lat": lat, "lon": lon, "radius_nm": min(200.0, max(1.0, radius_nm))})
     return json.dumps(data, ensure_ascii=False)[:60000]
 
 
@@ -115,7 +118,7 @@ def route_check(waypoints: list[list[float]], speed_kn: float = 12, corridor_nm:
 @mcp.tool()
 def navareas() -> str:
     """The 21 NAVAREAs: id (I..XXI), coordinator, the region id to use as navarea_id, warnings in force."""
-    data = _get("/api/public/navarea-zones/")
+    data = _get("/api/v2/navarea-zones/")
     if "error" in data:
         return json.dumps(data)
     rows = []
@@ -154,6 +157,63 @@ def post_noon_report(voyage_public_id: str, lat: float, lon: float, values: dict
 def weather_at(lat: float, lon: float, time: str | None = None) -> str:
     """Wind, sea state and the forecast at a position and time (ISO UTC, default now)."""
     return json.dumps(_get("/api/map/weather/", {"lat": lat, "lon": lon, "time": time}), ensure_ascii=False)[:20000]
+
+
+@mcp.tool()
+def find_port(q: str, lat: float | None = None, lon: float | None = None, top: bool = False) -> str:
+    """Ports by name, UN/LOCODE or country, or the nearest to a position (lat, lon). Each row has slug, name,
+    country, UN/LOCODE, position, harbour size, NAVAREA. Use the slug with port_details."""
+    params: dict[str, Any] = {"q": q, "lat": lat, "lon": lon, "page_size": 20}
+    if top:
+        params.update({"sort": "rank", "top": 1})
+    d = _get("/api/v2/ports/", params)
+    if isinstance(d, dict) and "ports" in d:
+        keys = ("slug", "name", "country_code", "un_locode", "lat_decimal", "lon_decimal", "harbor_size", "navarea_roman", "distance_nm")
+        d = {"total": d.get("total_count"), "ports": [{k: p.get(k) for k in keys if p.get(k) is not None} for p in d["ports"]]}
+    return json.dumps(d, ensure_ascii=False)[:30000]
+
+
+@mcp.tool()
+def port_details(slug: str) -> str:
+    """One port by slug: time zone and DST, tide range, depths, max draft, harbour size and type, shelter,
+    approach and pilotage, VTS and VHF channels, anchorages, restrictions, facilities (terminals, bunkers,
+    water, repairs), the warnings in force near it and the routes shared through it."""
+    d = _get(f"/api/v2/ports/{slug}/")
+    if isinstance(d, dict) and "port" in d:
+        port = d["port"]
+        port.pop("images", None)
+        d = {"port": port, "warnings_near": (d.get("warning_messages") or [])[:30], "routes": d.get("routes"), "resources": d.get("attached_resources")}
+    return json.dumps(d, ensure_ascii=False, default=str)[:40000]
+
+
+@mcp.tool()
+def stations_near(lat: float, lon: float, radius_nm: float = 200) -> str:
+    """Rescue coordination centres covering a position and the DSC coast stations in range (NGA Pub 117):
+    MMSI, bands and frequencies, watch times, telephone, e-mail."""
+    return json.dumps(_get("/api/v2/stations/near/", {"lat": lat, "lon": lon, "radius_nm": radius_nm}), ensure_ascii=False)[:30000]
+
+
+@mcp.tool()
+def find_vessel(q: str) -> str:
+    """A vessel by name, call sign or MMSI: every warning that names it (region, number, in force, link),
+    the vessel rows (name, MMSI, call sign, how many warnings), coast stations with that MMSI, and the
+    last AIS report when the live feed is on (ais_live says). The warning text is the authority."""
+    return json.dumps(_get("/api/v2/vessels/", {"q": q, "limit": 30}), ensure_ascii=False)[:40000]
+
+
+@mcp.tool()
+def convert_route(waypoints: list[list[float]], to: str = "rtz", name: str = "Route") -> str:
+    """Write a route as a file: to = rtz (ECDIS, IEC 61174), gpx, kml (Google Earth, My Maps), csv or nmea.
+    waypoints [[lat, lon], ...]. Returns the file text; save it with the matching extension."""
+    body = {"waypoints": [{"lat": p[0], "lon": p[1]} for p in waypoints], "name": name}
+    r = requests.post(f"{BASE}/api/v2/route/convert/", params={"to": to}, json=body, headers=HEADERS, timeout=60)
+    return r.text[:200000]
+
+
+@mcp.tool()
+def rigs() -> str:
+    """Mobile offshore drilling units with their last reported positions (from the warnings)."""
+    return json.dumps(_get("/api/v2/rigs/"), ensure_ascii=False, default=str)[:40000]
 
 
 if __name__ == "__main__":

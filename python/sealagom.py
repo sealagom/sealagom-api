@@ -193,11 +193,86 @@ class SeaLagom:
         return dict(self._get(f"/api/map/voyages/{voyage_public_id}/weather-track/", {}))
 
     # -- open endpoints (no key needed, but the key does no harm) -----------------------------------
-    def navarea_zones(self) -> dict:
-        return dict(self._get("/api/public/navarea-zones/", {}))
+    # -- lookups: ports, stations, vessels and MMSI, rigs, zones, lights, stats -----------------
+    def near(self, lat: float, lon: float, radius_nm: float = 30) -> dict:
+        """GET /api/v2/near/: warnings in force near a position, with distance and bearing."""
+        return dict(self._get("/api/v2/near/", {"lat": lat, "lon": lon, "radius_nm": radius_nm}))
+
+    def ports(self, q: str = "", *, lat: float | None = None, lon: float | None = None, top: bool = False, page: int = 1, page_size: int = 40) -> dict:
+        """GET /api/v2/ports/: by name, UN/LOCODE or country, or the nearest to lat/lon; top=True the main ports first."""
+        params: dict[str, Any] = {"q": q or None, "lat": lat, "lon": lon, "page": page, "page_size": page_size}
+        if top:
+            params.update({"sort": "rank", "top": 1})
+        return dict(self._get("/api/v2/ports/", params))
+
+    def port(self, slug: str) -> dict:
+        """GET /api/v2/ports/<slug>/: time zone, depths, approach and pilotage, VTS, anchorages, restrictions,
+        facilities, the warnings and the shared routes that touch the port."""
+        return dict(self._get(f"/api/v2/ports/{slug}/", {}))
+
+    def port_distance(self, from_slug: str, to_slug: str) -> dict:
+        """GET /api/v2/port-distances/: sea distance in NM along shared ECDIS routes."""
+        return dict(self._get("/api/v2/port-distances/", {"from": from_slug, "to": to_slug}))
+
+    def stations(self) -> dict:
+        """GET /api/v2/stations/: every rescue centre and DSC coast station (NGA Pub 117), with MMSI."""
+        return dict(self._get("/api/v2/stations/", {}))
 
     def stations_near(self, lat: float, lon: float, radius_nm: float = 200, limit: int = 12) -> dict:
-        return dict(self._get("/api/public/coast-stations/near/", {"lat": lat, "lon": lon, "radius_nm": radius_nm, "limit": limit}))
+        """GET /api/v2/stations/near/: the rescue centres covering a position and the DSC stations in range."""
+        return dict(self._get("/api/v2/stations/near/", {"lat": lat, "lon": lon, "radius_nm": radius_nm, "limit": limit}))
+
+    def station(self, station_id: int) -> dict:
+        return dict(self._get(f"/api/v2/stations/{int(station_id)}/", {}))
+
+    def vessels(self, q: str, limit: int = 50) -> dict:
+        """GET /api/v2/vessels/?q=: a vessel by name, call sign or MMSI. Returns vessels (name, mmsi, call_sign,
+        how many warnings name it), warnings (region, number, in_force, url), stations with that MMSI and
+        ais (the last AIS report when the live feed is on)."""
+        return dict(self._get("/api/v2/vessels/", {"q": q, "limit": limit}))
+
+    def vessel(self, mmsi: int, limit: int = 50) -> dict:
+        """GET /api/v2/vessels/<mmsi>/: the same for one MMSI."""
+        return dict(self._get(f"/api/v2/vessels/{int(mmsi)}/", {"limit": limit}))
+
+    def rigs(self) -> dict:
+        """GET /api/v2/rigs/: mobile offshore units with their last reported positions."""
+        return dict(self._get("/api/v2/rigs/", {}))
+
+    def zones(self) -> dict:
+        """GET /api/v2/zones/: nautical time zones and satcom footprints."""
+        return dict(self._get("/api/v2/zones/", {}))
+
+    def navarea_zones(self) -> dict:
+        """GET /api/v2/navarea-zones/: the 21 NAVAREAs as GeoJSON."""
+        return dict(self._get("/api/v2/navarea-zones/", {}))
+
+    def lights(self, scope: str = "", region_id: int | None = None, country: str = "") -> dict:
+        """GET /api/v2/lights/: aids to navigation reported out of order (Full API)."""
+        return dict(self._get("/api/v2/lights/", {"scope": scope or None, "region_id": region_id, "country": country or None}))
+
+    def stats(self) -> dict:
+        return dict(self._get("/api/v2/stats/", {}))
+
+    # -- route converter ------------------------------------------------------------------------
+    def convert_route(self, waypoints: list, to: str = "rtz", name: str = "") -> str:
+        """POST /api/v2/route/convert/?to=rtz|gpx|kml|csv|nmea with waypoints [(lat, lon), ...] or [{lat, lon, name}]; the file text."""
+        wps = [{"lat": p[0], "lon": p[1]} if isinstance(p, (tuple, list)) else p for p in waypoints]
+        r = self._s.post(f"{self.base}/api/v2/route/convert/", params={"to": to}, json={"waypoints": wps, "name": name}, timeout=self.timeout)
+        self.last_headers = dict(r.headers)
+        self._raise(r)
+        return r.text
+
+    def convert_route_file(self, path: str, to: str = "rtz", out_path: str | None = None) -> str:
+        """POST a route file (RTZ, RT3, GPX, KML, CSV, NMEA) and get it back in another format; writes out_path when given."""
+        with open(path, "rb") as fh:
+            r = self._s.post(f"{self.base}/api/v2/route/convert/", params={"to": to}, files={"file": (os.path.basename(path), fh)}, timeout=self.timeout)
+        self.last_headers = dict(r.headers)
+        self._raise(r)
+        if out_path:
+            with open(out_path, "w", encoding="utf-8", newline="") as out:
+                out.write(r.text)
+        return r.text
 
 
 if __name__ == "__main__":  # a smoke test: python sealagom.py

@@ -65,7 +65,8 @@ console.log(page.count, page.results[0]?.number);
 ## Agents and editors (MCP)
 
 `mcp/sealagom_mcp.py` is an MCP server with the tools `search_warnings`, `warnings_near`,
-`route_check`, `navareas` and `feeds`. Claude Desktop, Claude Code, Cursor, VS Code (Copilot agent
+`route_check`, `navareas`, `feeds`, `find_port`, `port_details`, `stations_near`, `find_vessel`,
+`convert_route`, `rigs`, `my_vessels`, `post_noon_report` and `weather_at`. Claude Desktop, Claude Code, Cursor, VS Code (Copilot agent
 mode), Windsurf and Zed all speak MCP; the config snippets are in [mcp/README.md](mcp/README.md).
 Two lines:
 
@@ -101,14 +102,52 @@ Endpoints: `/api/map/account/`, `/api/map/vessels/`, `/api/map/vessels/<id>/voya
 (all in [openapi.yaml](openapi.yaml), tag `noon`). Plan limits apply per account: free accounts
 have five reports, the Noon and Fleet plans more.
 
+## Ports, stations, vessels, MMSI
+
+Everything the site knows, under the same key, one request each (plan limits per account):
+
+```python
+api.ports("gibraltar")                        # slug, name, country, UN/LOCODE, position, harbour size, NAVAREA
+api.port("gibraltar")["port"]                 # time zone, depths, approach and pilotage, VTS, anchorages, restrictions, facilities
+api.stations_near(36.1, -5.4, 150)            # the MRCC covering the position, DSC stations with MMSI, bands, watch times
+api.vessels("al dasma")                       # every warning naming the vessel, its MMSI and call sign, stations with that MMSI, AIS when on
+api.vessel(447123000)                         # the same for one MMSI
+api.near(36.1, -5.4, 30); api.rigs(); api.zones(); api.navarea_zones(); api.lights(); api.stats()
+```
+
+Endpoints: `/api/v2/ports/`, `/api/v2/ports/<slug>/`, `/api/v2/port-distances/`, `/api/v2/stations/`,
+`/api/v2/stations/near/`, `/api/v2/stations/<id>/`, `/api/v2/vessels/?q=`, `/api/v2/vessels/<mmsi>/`,
+`/api/v2/near/`, `/api/v2/rigs/`, `/api/v2/zones/`, `/api/v2/navarea-zones/`, `/api/v2/lights/`,
+`/api/v2/stats/` (tag `lookups` in [openapi.yaml](openapi.yaml)). The MCP server has them as
+`find_port`, `port_details`, `stations_near`, `find_vessel`, `rigs`; the OpenAI-style definitions too.
+
+## Route converter
+
+Any route file in (RTZ, RT3, GPX, KML, CSV, NMEA), RTZ, GPX, KML, CSV or NMEA out:
+
+```python
+api.convert_route_file("passage.gpx", "rtz", out_path="passage.rtz")      # for the ECDIS
+kml = api.convert_route([(51.0, 1.5), (36.1, -5.4)], "kml", name="Dover Gib")  # for Google Earth or My Maps
+```
+
+```bash
+curl -X POST "https://www.sealagom.com/api/v2/route/convert/?to=rtz" -H "X-API-Token: YOUR_KEY" -F file=@passage.gpx -o passage.rtz
+```
+
+The same converter runs without the API in the tools library (`js/route-convert.mjs`,
+https://www.sealagom.com/github/tools/).
+
 ## Every platform
 
-Copilot, ChatGPT, DeepSeek, Qwen, Kimi, Zhipu, Baidu, NVIDIA NIM, Gemini, Groq, Ollama, Dify, Coze,
-n8n, Zapier, Make, Power Automate, Home Assistant, LangChain, Excel, Google Sheets, Telegram bots:
+Copilot, ChatGPT, Gemini, Grok, DeepSeek, Qwen, Kimi, Zhipu, Baidu, NVIDIA NIM, Groq, Ollama, Dify, Coze,
+n8n, Zapier, Make, Power Automate, Home Assistant, LangChain, Excel, Google Sheets and Docs (Apps Script),
+Google Earth and My Maps, Telegram bots:
 [integrations/PLATFORMS.md](integrations/PLATFORMS.md) has the row for each, with
 [integrations/openai-tools.json](integrations/openai-tools.json) (function definitions for any
 OpenAI-style tool caller) and [integrations/openai_compatible.py](integrations/openai_compatible.py)
-(the same loop on any of them: change the base URL).
+(the same loop on any of them: change the base URL), [integrations/gemini.py](integrations/gemini.py)
+(the same tools as Gemini function declarations), [integrations/google-apps-script.gs](integrations/google-apps-script.gs)
+(Sheets formulas and a Docs menu) and [integrations/google-maps.md](integrations/google-maps.md) (KML for Earth and My Maps).
 
 When a plan does not cover a call, the answer carries `upgrade`: the plan that unlocks it, the price
 for that request, the card link and the crypto call an agent can make on its own.
