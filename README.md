@@ -1,3 +1,5 @@
+<img src="brand/mark.svg" width="72" alt="">
+
 # SeaLagom API
 
 Navigational warnings of the whole world, as issued by the NAVAREA coordinators and the coastal
@@ -194,3 +196,5 @@ the analysis is machine-made and can be wrong, the original text is the authorit
 the key and the drop link secret. Credit "SeaLagom, www.sealagom.com" where the data is shown.
 
 Contact: contact@sealagom.com
+
+Brand files for integrations that show a logo: [brand/](brand/) (mark, wordmark, 512 px icon). Credit SeaLagom, www.sealagom.com.
