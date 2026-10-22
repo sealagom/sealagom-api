@@ -1,0 +1,121 @@
+# Builds every client in the kit and runs each example once against the public feed catalogue
+# (GET /api/v2/feeds/, no key needed). Runs on push to main and by hand only, so forks spend no minutes.
+name: Clients
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  endpoint:
+    name: Public endpoint
+    runs-on: ubuntu-latest
+    steps:
+      - name: The feed catalogue answers without a key
+        run: |
+          curl -fsS https://www.sealagom.com/api/v2/feeds/ -H "X-Requested-With: sealagom-kit" -H "User-Agent: sealagom-kit/ci" -o feeds.json
+          grep -q '"feeds"' feeds.json && grep -q '"military"' feeds.json
+
+  python:
+    name: Python client
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: feeds() through the client (a placeholder key; the catalogue is public)
+        run: |
+          python - <<'PY'
+          import sys
+          sys.path.insert(0, "python")
+          from sealagom import SeaLagom
+          feeds = SeaLagom("placeholder-key").feeds()["feeds"]
+          print(len(feeds), "feeds:", ", ".join(f["slug"] for f in feeds))
+          assert any(f["slug"] == "military" for f in feeds)
+          PY
+
+  javascript:
+    name: JavaScript client
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: node --check js/sealagom.mjs
+      - name: feeds() through the client
+        run: |
+          node --input-type=module -e '
+          import { SeaLagom } from "./js/sealagom.mjs";
+          const { feeds } = await new SeaLagom("placeholder-key").feeds();
+          console.log(feeds.length, "feeds:", feeds.map((f) => f.slug).join(", "));
+          if (!feeds.some((f) => f.slug === "military")) process.exit(1);
+          '
+
+  csharp:
+    name: C# client
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - run: dotnet build examples/csharp -c Release
+      - name: Run the example (no key, so it prints the feed catalogue)
+        run: dotnet run --project examples/csharp -c Release --no-build | tee out.txt && grep -q military out.txt
+
+  java:
+    name: Java client
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - run: javac -Xlint:all -d out java/SeaLagom.java examples/java/Near.java
+      - name: Run the example (no key, so it prints the feed catalogue)
+        run: java -cp out Near | tee out.txt && grep -q military out.txt
+
+  go:
+    name: Go client
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+      - name: Format, vet, build
+        working-directory: go
+        run: |
+          test -z "$(gofmt -l .)" || { gofmt -d .; exit 1; }
+          go vet ./...
+          go build ./...
+      - name: Run the example (no key, so it prints the feed catalogue)
+        working-directory: examples/go
+        run: go run . | tee out.txt && grep -q military out.txt
+
+  c:
+    name: C client
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
+      - run: gcc -std=c99 -Wall -Wextra -o near examples/c/near.c c/sealagom.c -lcurl
+      - name: Run the example (no key, so it prints the feed catalogue)
+        run: ./near | tee out.txt && grep -q military out.txt
+
+  powershell:
+    name: PowerShell client
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run the example (no key, so it prints the feed catalogue)
+        shell: pwsh
+        run: |
+          $out = ./examples/powershell/near.ps1
+          $out
+          if (-not ($out | Select-String military)) { exit 1 }

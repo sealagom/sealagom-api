@@ -13,8 +13,9 @@ X-API-Token: YOUR_KEY
 ```
 
 This repository is the integration kit: the OpenAPI spec, the data models, small clients for
-Python and JavaScript, an MCP server so Claude, Cursor, VS Code, Windsurf and any other agent can
-use the data as tools, and a GitHub Action that checks a route against the warnings in force.
+Python, JavaScript, C#, Java, Go, C and PowerShell, an MCP server so Claude, Cursor, VS Code, Windsurf
+and any other agent can use the data as tools, and a GitHub Action that checks a route against the
+warnings in force.
 
 ## Get a key
 
@@ -65,6 +66,36 @@ const api = new SeaLagom("YOUR_KEY");
 const page = await api.messages({ navarea_id: 1, ai_in_force: true });
 console.log(page.count, page.results[0]?.number);
 ```
+
+## Clients
+
+One file per language, no dependencies beyond the platform, for the languages maritime software is
+written in. Each client has the same surface: search warnings, warnings near a position, route check
+(a file or waypoints), NAVAREAs, feeds. Base URL `https://www.sealagom.com`, header `X-API-Token`,
+60 s timeout, errors carry the HTTP status and the server's message (401 no or wrong key, 403 the plan
+does not include the call, 429 allowance reached). Every example prints the warnings in force around
+55N 003E as a table; without a key it prints the public feed catalogue instead.
+
+| Language | Client | Example | Needs |
+|---|---|---|---|
+| Python 3.9+ | [python/sealagom.py](python/sealagom.py) | `python python/sealagom.py` | `pip install requests` |
+| JavaScript | [js/sealagom.mjs](js/sealagom.mjs) | the snippet above | Node 18+, Deno, Bun or a browser |
+| C# | [csharp/SeaLagom.cs](csharp/SeaLagom.cs) | [examples/csharp](examples/csharp): `dotnet run --project examples/csharp` | .NET 8 |
+| Java | [java/SeaLagom.java](java/SeaLagom.java) | [examples/java/Near.java](examples/java/Near.java): `javac -d out java/SeaLagom.java examples/java/Near.java && java -cp out Near` | Java 11+ |
+| Go | [go/sealagom.go](go/sealagom.go) | [examples/go](examples/go): `cd examples/go && go run .` | Go 1.21+ |
+| C | [c/sealagom.h](c/sealagom.h), [c/sealagom.c](c/sealagom.c) | [examples/c/near.c](examples/c/near.c): `gcc -o near examples/c/near.c c/sealagom.c -lcurl && ./near` | libcurl |
+| PowerShell | [powershell/SeaLagom.psm1](powershell/SeaLagom.psm1) | [examples/powershell/near.ps1](examples/powershell/near.ps1) | PowerShell 5.1 or 7 |
+
+The C client returns the JSON as a string, the Java client too (with two small helpers for a table);
+C#, Go and PowerShell give the platform's own JSON objects. Any other language comes from the spec
+with openapi-generator (Rust, Swift, Kotlin, PHP, Ruby, Dart, TypeScript...):
+
+```bash
+npx @openapitools/openapi-generator-cli generate -i openapi.yaml -g rust -o clients/rust
+```
+
+[.github/workflows/clients.yml](.github/workflows/clients.yml) builds every client and runs each
+example against the public feed catalogue.
 
 ## Agents and editors (MCP)
 

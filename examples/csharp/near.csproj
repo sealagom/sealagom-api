@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The example and the client in one build: dotnet run (set SEALAGOM_API_KEY first). -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SeaLagom.Examples</RootNamespace>
+    <AssemblyName>near</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../csharp/SeaLagom.cs" />
+  </ItemGroup>
+</Project>

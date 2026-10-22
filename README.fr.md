@@ -19,6 +19,8 @@ for w in api.messages(navarea_id=1, ai_in_force=True):
 
 **Ce que contient aussi ce kit.** La spécification OpenAPI, les schémas JSON, des clients Python et JavaScript, un serveur MCP pour Claude, Cursor, VS Code, Windsurf et Zed, des définitions d'outils pour ChatGPT, Copilot, Gemini, DeepSeek, Qwen, Kimi, NVIDIA NIM, Groq et toute plateforme compatible OpenAI, des scripts Windows (bat, PowerShell) et shell, une GitHub Action qui contrôle une route, les ports, les stations côtières, les navires par nom ou MMSI, un convertisseur de routes (RTZ, GPX, KML, CSV, NMEA), un bot Telegram, la publication sur X, Facebook, Instagram, Telegram.
 
+**Clients.** Python, JavaScript, C#, Java, Go, C, PowerShell.
+
 **Liens.** https://www.sealagom.com/profile/?tab=api · https://www.sealagom.com/developers/ · https://www.sealagom.com/github/tools/ · openapi.yaml · mcp/README.md · integrations/PLATFORMS.md · FEEDS.md
 
 Le texte de l'avis fait foi ; l'analyse est faite par une machine et peut se tromper. Citez SeaLagom, www.sealagom.com, là où vous montrez les données.

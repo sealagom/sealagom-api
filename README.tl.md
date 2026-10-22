@@ -19,6 +19,8 @@ for w in api.messages(navarea_id=1, ai_in_force=True):
 
 **Ano pa ang nasa kit na ito.** OpenAPI spec, JSON schema, Python at JavaScript client, MCP server para sa Claude, Cursor, VS Code, Windsurf at Zed, tool definition para sa ChatGPT, Copilot, Gemini, DeepSeek, Qwen, Kimi, NVIDIA NIM, Groq at anumang OpenAI-compatible na platform, script para sa Windows (bat, PowerShell) at shell, GitHub Action na nagsusuri ng ruta, mga daungan, coast station, barko ayon sa pangalan o MMSI, route converter (RTZ, GPX, KML, CSV, NMEA), Telegram bot, pag-post sa X, Facebook, Instagram, Telegram.
 
+**Mga client.** Python, JavaScript, C#, Java, Go, C, PowerShell.
+
 **Mga link.** https://www.sealagom.com/profile/?tab=api · https://www.sealagom.com/developers/ · https://www.sealagom.com/github/tools/ · openapi.yaml · mcp/README.md · integrations/PLATFORMS.md · FEEDS.md
 
 Ang teksto ng babala ang awtoridad; gawa ng makina ang pagsusuri at maaaring magkamali. Banggitin ang SeaLagom, www.sealagom.com, kung saan ipinapakita ang datos.

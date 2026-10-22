@@ -19,6 +19,8 @@ for w in api.messages(navarea_id=1, ai_in_force=True):
 
 **Що ще в наборі.** Специфікація OpenAPI, схеми JSON, клієнти на Python і JavaScript, сервер MCP для Claude, Cursor, VS Code, Windsurf і Zed, визначення інструментів для ChatGPT, Copilot, Gemini, DeepSeek, Qwen, Kimi, NVIDIA NIM, Groq і будь-якої OpenAI-сумісної платформи, скрипти для Windows (bat, PowerShell) та shell, GitHub Action для перевірки маршруту, порти, берегові станції, судна за назвою або MMSI, конвертер маршрутів (RTZ, GPX, KML, CSV, NMEA), бот Telegram, публікація в X, Facebook, Instagram, Telegram.
 
+**Клієнти.** Python, JavaScript, C#, Java, Go, C, PowerShell.
+
 **Посилання.** https://www.sealagom.com/profile/?tab=api · https://www.sealagom.com/developers/ · https://www.sealagom.com/github/tools/ · openapi.yaml · mcp/README.md · integrations/PLATFORMS.md · FEEDS.md
 
 Текст попередження первинний; розбір зроблено машиною, він може помилятися. Вказуйте SeaLagom, www.sealagom.com, там, де показуєте дані.
