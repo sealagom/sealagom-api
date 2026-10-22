@@ -172,7 +172,7 @@ The SeaLagom bot answers in a chat: `/navarea XI` the newest warnings in force, 
 around a position, `/vessel al dasma` or an MMSI, `/port gibraltar`, `/stations 36.1 -5.4` the rescue
 centre and DSC stations. Link your account from Profile, Security; a Contributor account then has no
 limit in the chat, `/watch navarea XI critical` sends every new warning of the region as it is issued,
-and `/pay contributor` opens a crypto invoice right there (card on the site). `/donate 5` says thank you.
+and `/pay contributor` opens a crypto invoice right there (card on the site).
 Free chats have a few commands a day. Signal has no bot API; Telegram, Discord, Slack, Matrix do.
 
 ## Any system: drop a route, get the result
@@ -190,20 +190,18 @@ POST https://www.sealagom.com/api/v2/drop/YOUR_KEY/route/    form field "file"
 
 No browser needed: [examples/pay-from-console.sh](examples/pay-from-console.sh) opens a crypto
 invoice for an API plan and the status link returns the key once the coins arrived
-(`POST /api/agent/checkout/`, then `GET` the `status_url`). Donations of any size:
-`POST /api/agent/donate/ {"amount": 0.20}`.
+(`POST /api/agent/checkout/`, then `GET` the `status_url`).
 
 ## Apps
 
 The site installs as an app from the browser (Android, iOS, desktop). Native apps come when enough
 people ask: https://www.sealagom.com/developers/ counts the hands.
 
-## Support the service, bring a colleague
+## Bring a colleague
 
-Donations in any coin from 0.20 USD: `POST https://www.sealagom.com/api/agent/donate/ {"amount": 5}`
-returns the invoice link, or `/donate` in Telegram. Contributors who bring a colleague get 50 % off
-three months when the colleague subscribes to Contributor (Profile, Referrals). Where you show the
-data, credit SeaLagom, www.sealagom.com; that is the whole licence for the warnings.
+Contributors who bring a colleague get 50 % off three months when the colleague subscribes to
+Contributor (Profile, Referrals). Where you show the data, credit SeaLagom, www.sealagom.com; that is
+the whole licence for the warnings.
 
 ## GitHub Action: check a route in CI
 
