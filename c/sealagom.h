@@ -43,7 +43,7 @@ int sealagom_search_warnings(const char *key, const char *query, sealagom_result
 int sealagom_warnings_near(const char *key, double lat, double lon, double radius_nm, sealagom_result *out);
 
 /* POST /api/v2/route/ with a route file (RTZ, RT3, GPX, KML, CSV, NMEA; up to 5 MB). departure ISO UTC or
- * NULL. Answer: route_nm, navareas[], count, results[] with distance_nm, along_nm, verdict, ai. */
+ * NULL. Answer: route_nm, navareas[], count, results[] with closest_nm, along_nm, verdict, ai. */
 int sealagom_route_check_file(const char *key, const char *path, double speed_kn, double corridor_nm,
                               const char *departure, sealagom_result *out);
 

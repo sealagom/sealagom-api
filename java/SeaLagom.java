@@ -119,7 +119,7 @@ public final class SeaLagom {
 
     // -- route ------------------------------------------------------------------------------------
     /** POST /api/v2/route/ with waypoints {{lat, lon}, ...}; departure ISO UTC or null. Answer: route_nm, navareas[],
-     *  count, results[] (distance_nm, along_nm, verdict, ai). */
+     *  count, results[] (closest_nm, along_nm, verdict, ai). */
     public String routeCheck(double[][] waypoints, double speedKn, double corridorNm, String departure) {
         StringBuilder sb = new StringBuilder("{\"waypoints\":[");
         for (int i = 0; i < waypoints.length; i++)

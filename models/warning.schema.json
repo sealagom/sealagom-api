@@ -1,71 +1,776 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://www.sealagom.com/schemas/warning.schema.json",
+  "$id": "https://raw.githubusercontent.com/sealagom/sealagom-api/main/models/warning.schema.json",
   "title": "Warning",
-  "description": "One navigational warning as served by GET /api/v2/messages/ (and inside regions as active_messages / archived_messages, without the scope and region fields). The stable key is (scope, region_id, number).",
+  "$comment": "Made by models/build_models.py from openapi.yaml (components/schemas/Warning); do not edit.",
   "type": "object",
-  "required": ["id", "number", "content", "added_on"],
+  "description": "One navigational warning as a row of GET /api/v2/messages/, /api/v2/ice/ and /api/v2/feeds/{slug}/. One warning as a row of /api/v2/messages/, /api/v2/ice/ and /api/v2/feeds/{slug}/. The stable key is (scope, region_id, number); id is unique only within (scope, is_archived).",
+  "required": [
+    "scope",
+    "region_id",
+    "id",
+    "number",
+    "is_archived"
+  ],
   "properties": {
-    "scope": { "type": "string", "enum": ["navarea", "coastal"] },
-    "region_id": { "type": "integer", "description": "The region the warning belongs to (navarea_id or coastal_id)." },
-    "region_title": { "type": "string", "examples": ["NAVAREA I", "NAVAREA II Coastal"] },
-    "country": { "type": "string" },
-    "id": { "type": "integer", "description": "Row id; unique within (scope, is_archived)." },
-    "number": { "type": "string", "description": "Warning number as broadcast.", "examples": ["1234/26", "WZ 1200"] },
-    "title": { "type": "string" },
-    "content": { "type": "string", "description": "Full warning text as broadcast, original language." },
-    "content_en": { "type": "string", "description": "English text: the official English version or a machine translation." },
-    "source_language": { "type": "string", "examples": ["en", "fr", "zh", "tr"] },
-    "added_on": { "type": "string", "format": "date-time", "description": "When SeaLagom received it (UTC)." },
-    "cancel_date": { "type": ["string", "null"], "format": "date-time" },
-    "is_archived": { "type": "boolean", "description": "Cancelled or expired." },
-    "archived_on": { "type": ["string", "null"], "format": "date-time" },
-    "coordinates": {
-      "description": "Positions as printed (list of strings); with include_enhanced_coordinates an object with decimal, DMS, GeoJSON and map pairs. null without access.",
-      "oneOf": [{ "type": "array", "items": { "type": "string" } }, { "$ref": "#/$defs/EnhancedCoordinates" }, { "type": "null" }]
+    "scope": {
+      "$ref": "#/$defs/WarningScope"
     },
-    "keywords": { "type": ["object", "null"], "description": "Keyword map, e.g. {hazard, location, action}. Full API." },
-    "geo_features": { "oneOf": [{ "$ref": "#/$defs/GeoFeatures" }, { "type": "null" }] },
-    "ai_analysis": { "oneOf": [{ "$ref": "analysis.schema.json" }, { "type": "null" }], "description": "null when not requested, not in the plan or not analysed yet." },
-    "ice": { "type": "object", "description": "Ice feed only.", "properties": { "type": { "type": "string" }, "reason": { "type": "string" } } },
-    "feed": { "type": "object", "description": "Themed feed only.", "properties": { "category": { "type": "string" } } }
+    "region_id": {
+      "type": "integer"
+    },
+    "region_title": {
+      "type": "string",
+      "description": "The region's title (a coastal region: title and sub title)"
+    },
+    "country": {
+      "type": "string",
+      "description": "The region's country; can be empty or None"
+    },
+    "is_archived": {
+      "type": "boolean"
+    },
+    "archived_on": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "description": "When it left force; null for a warning in force"
+    },
+    "id": {
+      "type": "integer"
+    },
+    "title": {
+      "type": "string"
+    },
+    "number": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "added_on": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "description": "When SeaLagom received it (UTC); can be null for a warning in force"
+    },
+    "cancel_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "description": "The end the warning gives itself; warnings in force only (absent on archived rows)"
+    },
+    "coordinates": {
+      "type": [
+        "array",
+        "object",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      },
+      "additionalProperties": true,
+      "description": "null on the Basic plans and the free tier (positions come on the API Default and Full API plans), or when none were read; otherwise the positions as printed in the warning (an array of strings), or with include_enhanced_coordinates an object of the EnhancedCoordinates shape. The ice and themed feeds give the object by default."
+    },
+    "keywords": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true,
+      "description": "Keyword groups and the phrases matched in the text (group name to a list of phrases); null without a plan that has keywords."
+    },
+    "geo_features": {
+      "description": "null unless include_geo_features=true on the Full API plan, or when the warning has no shapes",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/GeoFeatures"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "ai_analysis": {
+      "description": "null unless include_ai_analysis=true on the Full API plan, or when there is no analysis yet",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/Analysis"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "content_en": {
+      "type": "string",
+      "description": "English text (the original when it is English)"
+    },
+    "source_language": {
+      "type": "string",
+      "description": "Language code of the original (en by default)"
+    },
+    "ice": {
+      "description": "The ice feed and topic=ice only",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/IceMatch"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "feed": {
+      "description": "Themed feeds only",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/FeedMatch"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
   },
   "$defs": {
-    "EnhancedCoordinates": {
+    "Analysis": {
+      "type": "object",
+      "description": "The machine-made analysis of one warning (Full API). The warning is the authority. status, severity and category are open strings: new values can appear.",
+      "properties": {
+        "headline": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string",
+          "description": "One of the AnalysisCategory ids"
+        },
+        "category_label": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "subject_label": {
+          "type": "string"
+        },
+        "feeds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FeedRef"
+          },
+          "description": "The feeds the warning is in (ice included)"
+        },
+        "severity": {
+          "type": "string",
+          "description": "critical, high, moderate, low or info (can be empty)"
+        },
+        "status": {
+          "type": "string",
+          "description": "The live status: active, scheduled, expired, withdrawn, cancellation_notice or informational"
+        },
+        "status_label": {
+          "type": "string"
+        },
+        "valid_from": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "valid_until": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "description": "The end of validity (the warning's own cancel date when the analysis has none)"
+        },
+        "is_routine": {
+          "type": "boolean"
+        },
+        "series_key": {
+          "type": "string"
+        },
+        "series_label": {
+          "type": "string"
+        },
+        "newsworthy": {
+          "type": "boolean"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "status_at_analysis": {
+          "type": "string",
+          "description": "active, scheduled, expired, cancellation_notice or informational when analysed (can be empty)"
+        },
+        "validity_text": {
+          "type": "string"
+        },
+        "time_windows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AnalysisTimeWindow"
+          }
+        },
+        "location": {
+          "type": "string"
+        },
+        "hazards": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "mariner_action": {
+          "type": "string"
+        },
+        "background": {
+          "type": "string",
+          "description": "General knowledge, newsworthy warnings only (not from the warning)"
+        },
+        "cancels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "keep_clear_nm": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "keep_clear_text": {
+          "type": "string"
+        },
+        "contacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AnalysisContact"
+          }
+        },
+        "vessels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AnalysisVessel"
+          }
+        },
+        "ports": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AnalysisNamed"
+          }
+        },
+        "platforms": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AnalysisNamed"
+          }
+        },
+        "stations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AnalysisNamed"
+          }
+        },
+        "depth_m": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "observed_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "aids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AnalysisAid"
+          }
+        },
+        "charts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "positions_read": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "coord_check": {
+          "$ref": "#/$defs/CoordCheck"
+        },
+        "translations": {
+          "type": "object",
+          "description": "Language code (zh, es, ru, pt, el, uk, tr, fr, tl) to the translated texts",
+          "additionalProperties": {
+            "$ref": "#/$defs/AnalysisTranslation"
+          }
+        },
+        "confidence": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "analyzed_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "model": {
+          "type": "string"
+        },
+        "matches": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true,
+          "description": "The region calls only: what the site knows about the named vessels, ports, platforms, stations and aids"
+        }
+      },
+      "additionalProperties": true
+    },
+    "AnalysisAid": {
       "type": "object",
       "properties": {
-        "decimal": { "type": "array", "items": { "type": "object", "properties": { "lat": { "type": "number" }, "lon": { "type": "number" } } } },
-        "dms": { "type": "array", "items": { "type": "string" } },
-        "geojson": { "type": "object" },
-        "map": { "type": "array", "items": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 } }
+        "name": {
+          "type": "string"
+        },
+        "identifier": {
+          "type": "string"
+        },
+        "characteristic": {
+          "type": "string"
+        },
+        "condition": {
+          "type": "string"
+        },
+        "position": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "AnalysisContact": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "vhf, phone, email, station, website or other"
+        },
+        "value": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "AnalysisNamed": {
+      "type": "object",
+      "description": "A port ({name, country}), a platform or a station ({name, kind})",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "AnalysisTimeWindow": {
+      "type": "object",
+      "properties": {
+        "start": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "end": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "AnalysisTranslation": {
+      "type": "object",
+      "properties": {
+        "headline": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "mariner_action": {
+          "type": "string"
+        },
+        "background": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "AnalysisVessel": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "call_sign": {
+          "type": "string"
+        },
+        "mmsi": {
+          "type": "string"
+        },
+        "imo": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "CoordCheck": {
+      "type": "object",
+      "description": "The analysis' positions against the parser's; an empty object when the check did not run",
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "ok, mismatch, parser_found_none, no_positions or skipped"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "ai_count": {
+          "type": "integer"
+        },
+        "parser_count": {
+          "type": "integer"
+        },
+        "ai_only": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "parser_only": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ai_unparsed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "needs_review": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
+    },
+    "FeedMatch": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The analysis category that put the warning in the feed"
+        }
+      },
+      "additionalProperties": true
+    },
+    "FeedRef": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
       }
+    },
+    "GeoFeature": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "kind": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "area, circle, line, lane, point, sector or displacement"
+        },
+        "label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "keyword_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "coordinates_raw": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "points": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/GeoPoint"
+          }
+        },
+        "radius_nm": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Circles only"
+        },
+        "closed": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "metadata": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        },
+        "safety_zone_meters": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Points of a warning with a safety zone: its radius in metres"
+        },
+        "safety_zone_nm": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Points of a warning with a safety zone: its radius in nautical miles"
+        }
+      },
+      "additionalProperties": true
     },
     "GeoFeatures": {
       "type": "object",
-      "description": "Areas, circles, lines, lanes and sectors read from the warning, with decimal points.",
+      "description": "The shapes read from the warning, as stored (older warnings may lack some keys).",
       "properties": {
-        "version": { "type": "integer" },
-        "message_profile": { "type": "string" },
-        "multi_zone": { "type": "boolean" },
-        "zone_labels": { "type": "array", "items": { "type": "string" } },
+        "version": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
         "features": {
           "type": "array",
           "items": {
-            "type": "object",
-            "properties": {
-              "id": { "type": "string" },
-              "kind": { "type": "string", "examples": ["area", "circle", "line", "lane", "point", "sector"] },
-              "label": { "type": "string" },
-              "closed": { "type": "boolean" },
-              "radius_nm": { "type": "number" },
-              "points": {
-                "type": "array",
-                "items": { "type": "object", "properties": { "lat": { "type": "number" }, "lon": { "type": "number" }, "text": { "type": "string" } } }
-              }
-            }
+            "$ref": "#/$defs/GeoFeature"
           }
+        },
+        "keyword_geometry": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "section_markers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "message_profile": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "zone_labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "multi_zone": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "corridor_nm": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "corridors_nm": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "safety_zone": {
+          "description": "The safety zone the text gives around a rig or a point (for example 500 METER SAFETY ZONE), or null",
+          "oneOf": [
+            {
+              "$ref": "#/$defs/SafetyZone"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "clearance_nm": {
+          "type": [
+            "number",
+            "null"
+          ]
         }
-      }
+      },
+      "additionalProperties": true
+    },
+    "GeoPoint": {
+      "type": "object",
+      "properties": {
+        "lat": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "lon": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "IceMatch": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "iceberg, sea_ice, ice_edge, icing, ice_report, icebreaker, ice_navigation or other_ice"
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "SafetyZone": {
+      "type": "object",
+      "properties": {
+        "safety_zone_meters": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "The radius in metres as given"
+        },
+        "safety_zone_nm": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "The same radius in nautical miles"
+        }
+      },
+      "additionalProperties": true
+    },
+    "WarningScope": {
+      "type": "string",
+      "description": "navarea or coastal",
+      "enum": [
+        "navarea",
+        "coastal"
+      ]
     }
   }
 }

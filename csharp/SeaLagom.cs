@@ -123,7 +123,7 @@ public sealed class Client : IDisposable
 
     // -- route ------------------------------------------------------------------------------------
     /// <summary>POST /api/v2/route/ with JSON waypoints (lat, lon). Answer: route_nm, navareas[], count, results[]
-    /// with distance_nm, along_nm, verdict, ai.</summary>
+    /// with closest_nm, along_nm, verdict, ai.</summary>
     public Task<JsonElement> RouteCheck(IEnumerable<(double lat, double lon)> waypoints, double speedKn = 12, double corridorNm = 10, string? departure = null)
     {
         var body = new Dictionary<string, object?>

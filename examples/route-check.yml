@@ -36,7 +36,7 @@ jobs:
           bad = []
           for w in r["results"]:
               ai = w.get("ai") or {}
-              line = f"  {w['region_title']} {w['number']}  {w['distance_nm']} NM off at {w['along_nm']} NM  {w['verdict']}  {ai.get('severity','')}  {ai.get('headline','')}"
+              line = f"  {w['region_title']} {w['number']}  {w['closest_nm']} NM off at {w['along_nm']} NM  {w['verdict']}  {ai.get('severity','')}  {ai.get('headline','')}"
               print(line)
               if w["verdict"] in ("in_force", "upcoming") and ai.get("severity") in fail:
                   bad.append(line)

@@ -153,7 +153,7 @@ func (c *Client) Feed(slug string, p Params) (map[string]any, error) {
 }
 
 // RouteCheck is POST /api/v2/route/ with waypoints {lat, lon}; departure ISO UTC or "". Answer: route_nm,
-// navareas[], count, results[] (distance_nm, along_nm, verdict, ai).
+// navareas[], count, results[] (closest_nm, along_nm, verdict, ai).
 func (c *Client) RouteCheck(waypoints [][2]float64, speedKn, corridorNm float64, departure string) (map[string]any, error) {
 	wps := make([]map[string]float64, len(waypoints))
 	for i, w := range waypoints {

@@ -249,7 +249,11 @@ severity lies on the route. See [examples/route-check.yml](examples/route-check.
 | Analysis | [models/analysis.schema.json](models/analysis.schema.json) | headline, summary, category, severity, live status, validity, hazards, keep-clear distance, contacts, vessels |
 | Route result | [models/route-result.schema.json](models/route-result.schema.json) | route length, NAVAREAs crossed, warnings along the route with distance and ETA verdict |
 
-The full specification: [openapi.yaml](openapi.yaml). Endpoints without a key: the 21 NAVAREA
+The three files are made from the components of the specification by
+[models/build_models.py](models/build_models.py) and never edited by hand.
+
+The full specification: [openapi.yaml](openapi.yaml), self-contained (OpenAPI 3.1; the site also serves it as
+OpenAPI 3.0.3 at https://www.sealagom.com/openapi-3.0.json). Endpoints without a key: the 21 NAVAREA
 zones as GeoJSON, coast radio and rescue stations near a position, port distances, the feed
 catalogue, and free RSS and plain-text feeds of the newest warnings.
 
