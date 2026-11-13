@@ -2,7 +2,7 @@
  * MIT License, Copyright (c) 2026 SeaLagom. See LICENSE in the repository root.
  *
  *   sealagom_result r;
- *   if (sealagom_warnings_near(NULL, 55.0, 3.0, 60, &r) == 0) puts(r.body);   /* key NULL: SEALAGOM_API_KEY */
+ *   if (sealagom_warnings_near(NULL, 55.0, 3.0, 60, &r) == 0) puts(r.body);   // key NULL: SEALAGOM_API_KEY
  *   else fprintf(stderr, "SeaLagom %d: %s\n", r.status, r.detail);
  *   sealagom_free(&r);
  *
