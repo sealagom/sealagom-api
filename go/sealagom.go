@@ -133,7 +133,9 @@ func (c *Client) send(method, path string, body io.Reader, contentType string) (
 
 // SearchWarnings is GET /api/v2/messages/: navarea_id, country, q, date_from, date_to, ai_severity, ai_in_force,
 // include_ai_analysis, topic, page, page_size... Answer: count, next, results[].
-func (c *Client) SearchWarnings(p Params) (map[string]any, error) { return c.Get("/api/v2/messages/", p) }
+func (c *Client) SearchWarnings(p Params) (map[string]any, error) {
+	return c.Get("/api/v2/messages/", p)
+}
 
 // WarningsNear is GET /api/v2/near/: warnings in force within radiusNm (up to 200) of a position. Answer: count,
 // warnings[] with region_title, number, distance_nm, nearest, ai (headline, severity, valid_until).
